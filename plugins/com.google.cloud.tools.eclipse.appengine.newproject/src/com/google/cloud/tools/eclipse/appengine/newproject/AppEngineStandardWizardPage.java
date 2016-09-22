@@ -87,9 +87,11 @@ public class AppEngineStandardWizardPage extends WizardNewProjectCreationPage {
     }
 
     String projectId = projectIdField.getText();
-    if (!AppEngineProjectIdValidator.validate(projectId)) {
-      setErrorMessage("Illegal App Engine Project ID: " + projectId);
-      return false;
+    if (!projectId.isEmpty()) {
+      if (!AppEngineProjectIdValidator.validate(projectId)) {
+        setErrorMessage("Illegal App Engine Project ID: " + projectId);
+        return false;
+      }
     }
 
     File parent = getLocationPath().toFile();
