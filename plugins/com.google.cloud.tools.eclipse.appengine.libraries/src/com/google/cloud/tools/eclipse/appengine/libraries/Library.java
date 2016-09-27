@@ -20,10 +20,6 @@ public class Library {
     return id;
   }
 
-  public void setId(String id) {
-    this.id = id;
-  }
-
   public IPath getContainerPath() {
     return new Path(CONTAINER_PATH_PREFIX + "/" + id);
   }

@@ -1,6 +1,7 @@
 package com.google.cloud.tools.eclipse.appengine.newproject;
 
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.Collections;
@@ -28,6 +29,8 @@ import com.google.cloud.tools.eclipse.appengine.libraries.Library;;
 
 @RunWith(MockitoJUnitRunner.class)
 public class CreateAppEngineStandardWtpProjectTest {
+
+  private static final String FAKE_LIBRARY = "fake-library";
 
   @Mock private IAdaptable adaptable;
 
@@ -86,7 +89,7 @@ public class CreateAppEngineStandardWtpProjectTest {
   public void testAppEngineLibrariesAdded() throws InvocationTargetException, CoreException {
     AppEngineStandardProjectConfig config = new AppEngineStandardProjectConfig();
     config.setProject(project);
-    Library library = new Library("fake-library");
+    Library library = new Library(FAKE_LIBRARY);
     config.setAppEngineLibraries(Collections.singletonList(library));
     CreateAppEngineStandardWtpProject creator = new CreateAppEngineStandardWtpProject(config, adaptable);
     creator.execute(new NullProgressMonitor());
@@ -96,13 +99,12 @@ public class CreateAppEngineStandardWtpProjectTest {
   private void assertAppEngineContainerOnClasspath(Library library) throws CoreException {
     assertTrue(project.hasNature(JavaCore.NATURE_ID));
     IJavaProject javaProject = JavaCore.create(project);
-    boolean found = false;
     for (IClasspathEntry iClasspathEntry : javaProject.getRawClasspath()) {
       if (iClasspathEntry.getPath().equals(library.getContainerPath())) {
-        found = true;
+        return;
       }
     }
-    assertTrue(found);
+    fail("Classpath container " + FAKE_LIBRARY + " was not added to the build path");
   }
 
   @Test
