@@ -1,23 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?eclipse version="3.4"?>
 <plugin>
-<extension-point id="com.google.cloud.tools.eclipse.appengine.libraries" name="App Engine Libraries" schema="schema/com.google.cloud.tools.eclipse.appengine.libraries.exsd"/>
-
-<extension
-      point="com.google.cloud.tools.eclipse.appengine.libraries">
-      <library
-            id="com.google.cloud.tools.eclipse.appengine.libraries/appengine-api"
-            name="App Engine API">
-            <jarFile>
-         <mavenCoordinates
-               artifactId="appengine-api-1.0-sdk"
-               groupId="com.google.appengine"
-               repositoryUri="http://repo1.maven.org/maven2/">
-         </mavenCoordinates>
-         <exclusionFilter
-               pattern="com.google.appengine.repackaged.*">
-         </exclusionFilter>
-         </jarFile>
-      </library>
-</extension>
+  <extension-point id="com.google.cloud.tools.eclipse.appengine.libraries" name="App Engine Libraries" schema="schema/com.google.cloud.tools.eclipse.appengine.libraries.exsd"/>
+  
+  <extension point="com.google.cloud.tools.eclipse.appengine.libraries">
+    <library 
+          id="com.google.cloud.tools.eclipse.appengine.libraries/appengine-api"
+          name="App Engine API">
+      <jarFile>
+        <mavenCoordinates
+              artifactId="appengine-api-1.0-sdk"
+              groupId="com.google.appengine"
+              repositoryUri="http://repo1.maven.org/maven2/">
+        </mavenCoordinates>
+        <exclusionFilter pattern="com.google.appengine.repackaged.*" />
+      </jarFile>
+    </library>
+  </extension>
+  
 </plugin>
