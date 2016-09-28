@@ -2,11 +2,8 @@ package com.google.cloud.tools.eclipse.appengine.newproject;
 
 import java.io.File;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.jface.dialogs.Dialog;
@@ -37,7 +34,7 @@ public class AppEngineStandardWizardPage extends WizardNewProjectCreationPage {
   private Text javaPackageField;
   private Text projectIdField;
   private Group apiGroup;
-  private Map<Button, Library> libraries = new HashMap<>();
+  private List<Button> libraryButtons = new LinkedList<>();
 
   public AppEngineStandardWizardPage() {
     super("basicNewProjectPage"); //$NON-NLS-1$
@@ -88,13 +85,14 @@ public class AppEngineStandardWizardPage extends WizardNewProjectCreationPage {
 
   private void addManageLibrariesWidgets(Composite container) {
     apiGroup = new Group(container, SWT.NONE);
-    apiGroup.setText("Manage Libraries");
+    apiGroup.setText(Messages.AppEngineStandardWizardPage_librariesGroupLabel);
     GridDataFactory.fillDefaults().span(2, 1).applyTo(apiGroup);
 
     for (Library library : getLibraries()) {
       Button libraryButton = new Button(apiGroup, SWT.CHECK);
       libraryButton.setText(library.getId());
-      libraries.put(libraryButton, library);
+      libraryButton.setData(library);
+      libraryButtons.add(libraryButton);
     }
 
     GridLayoutFactory.fillDefaults().applyTo(apiGroup);
@@ -157,9 +155,9 @@ public class AppEngineStandardWizardPage extends WizardNewProjectCreationPage {
 
   public List<Library> getSelectedLibraries() {
     List<Library> selected = new LinkedList<>();
-    for (Entry<Button, Library> entry : libraries.entrySet()) {
-      if (entry.getKey().getSelection()) {
-        selected.add(entry.getValue());
+    for (Button button : libraryButtons) {
+      if (button.getSelection()) {
+        selected.add((Library) button.getData());
       }
     }
     return selected;
