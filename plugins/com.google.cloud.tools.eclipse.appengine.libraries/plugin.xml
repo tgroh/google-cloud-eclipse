@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?eclipse version="3.4"?>
 <plugin>
-  <extension-point id="com.google.cloud.tools.eclipse.appengine.libraries" name="App Engine Libraries" />
+  <extension-point id="com.google.cloud.tools.eclipse.appengine.libraries" name="App Engine Libraries" schema="schema/com.google.cloud.tools.eclipse.appengine.libraries.exsd"/>
   
   <extension point="com.google.cloud.tools.eclipse.appengine.libraries">
     <library 
