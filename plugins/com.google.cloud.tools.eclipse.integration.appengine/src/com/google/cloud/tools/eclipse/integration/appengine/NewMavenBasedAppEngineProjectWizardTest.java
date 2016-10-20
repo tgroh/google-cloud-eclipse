@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Google Inc. All Rights Reserved.
+ * Copyright 2016 Google Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -100,7 +100,7 @@ public class NewMavenBasedAppEngineProjectWizardTest extends AbstractProjectTest
       throws CoreException, IOException {
     assertFalse(projectExists(artifactId));
     project = SwtBotAppEngineActions.createMavenWebAppProject(bot, location, "test", artifactId,
-        packageName, projectId, archetypeDescription);
+        packageName, archetypeDescription);
     assertTrue(project.exists());
     if (location != null) {
       assertEquals(new File(location).getCanonicalPath(),
