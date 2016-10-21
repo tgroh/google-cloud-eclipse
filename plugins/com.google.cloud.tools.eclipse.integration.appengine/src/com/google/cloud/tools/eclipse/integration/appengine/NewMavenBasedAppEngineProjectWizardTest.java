@@ -31,6 +31,7 @@ import com.google.common.base.Joiner;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.Path;
+import org.eclipse.swtbot.eclipse.finder.SWTWorkbenchBot;
 import org.eclipse.swtbot.swt.finder.junit.SWTBotJunit4ClassRunner;
 import org.eclipse.wst.common.project.facet.core.IFacetedProject;
 import org.junit.Test;
@@ -90,8 +91,9 @@ public class NewMavenBasedAppEngineProjectWizardTest extends AbstractProjectTest
       String packageName, String archetypeDescription, String[] projectFiles)
       throws CoreException, IOException {
     assertFalse(projectExists(artifactId));
-    project = SwtBotAppEngineActions.createMavenWebAppProject(bot, location, "test", artifactId,
-        packageName, archetypeDescription);
+    
+    project = SwtBotAppEngineActions.createMavenWebAppProject(bot, location, 
+        "com.google.groupId", artifactId, packageName, archetypeDescription);
     assertTrue(project.exists());
     if (location != null) {
       assertEquals(new File(location).getCanonicalPath(),

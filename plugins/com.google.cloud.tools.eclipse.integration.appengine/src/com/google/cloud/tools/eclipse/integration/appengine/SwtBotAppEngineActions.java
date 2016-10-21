@@ -99,7 +99,7 @@ public class SwtBotAppEngineActions {
       bot.list().select(archetypeDescription);
     }
 
-    int mavenCompletionTimeout = 45000/* ms */; // can take a loooong time to fetch archetypes
+    int mavenCompletionTimeout = 60000/* ms */; // can take a loooong time to fetch archetypes
     SwtBotTimeoutManager.setTimeout(mavenCompletionTimeout);
     SwtBotTestingUtilities.clickButtonAndWaitForWindowChange(bot, bot.button("Finish"));
     SwtBotTimeoutManager.resetTimeout();
