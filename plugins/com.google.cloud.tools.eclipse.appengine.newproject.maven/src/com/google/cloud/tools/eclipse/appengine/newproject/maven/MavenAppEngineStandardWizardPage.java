@@ -237,7 +237,6 @@ public class MavenAppEngineStandardWizardPage extends WizardPage {
    */
   private boolean validateGeneratedProjectLocation() {
     String artifactId = getArtifactId();
-    // assert !artifactId.isEmpty()
     IPath path = getLocationPath().append(artifactId);
     if (path.toFile().exists()) {
       String errorMessage = MessageFormat.format(Messages.getString("LOCATION_ALREADY_EXISTS"), path);
