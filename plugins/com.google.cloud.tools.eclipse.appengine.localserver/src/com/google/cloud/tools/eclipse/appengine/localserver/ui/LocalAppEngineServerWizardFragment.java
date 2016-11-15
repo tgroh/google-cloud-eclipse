@@ -68,13 +68,9 @@ public class LocalAppEngineServerWizardFragment extends WizardFragment {
     GridLayout layout = new GridLayout();
     layout.numColumns = 1;
     cloudSdkComposite.setLayout(layout);
-  
+
     Label label = new Label(cloudSdkComposite, SWT.NONE);
-    if (cloudSdkLocation != null) {
-      label.setText(NLS.bind(Messages.RUNTIME_WIZARD_CLOUD_SDK_FOUND, cloudSdkLocation));
-    } else {
-      label.setText(Messages.RUNTIME_WIZARD_CLOUD_SDK_NOT_FOUND);
-    }
+    label.setText(getCloudSdkConfigurationMessage());
 
     Button button = new Button(cloudSdkComposite, SWT.PUSH);
     button.setText("Update SDK Location");
