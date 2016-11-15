@@ -20,6 +20,7 @@ import com.google.cloud.tools.appengine.api.AppEngineException;
 import com.google.cloud.tools.appengine.cloudsdk.CloudSdk;
 import com.google.cloud.tools.eclipse.appengine.localserver.Messages;
 import com.google.cloud.tools.eclipse.sdk.ui.preferences.CloudSdkPreferenceArea;
+import com.google.common.annotations.VisibleForTesting;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.preference.PreferenceDialog;
 import org.eclipse.osgi.util.NLS;
@@ -40,6 +41,12 @@ public class LocalAppEngineServerWizardFragment extends WizardFragment {
 
   public LocalAppEngineServerWizardFragment() {
     cloudSdkLocation = getCloudSdkLocation();
+  }
+
+  @VisibleForTesting
+  LocalAppEngineServerWizardFragment(String cloudSdkLocation)
+  {
+    this.cloudSdkLocation = cloudSdkLocation;
   }
 
   @Override
@@ -88,6 +95,15 @@ public class LocalAppEngineServerWizardFragment extends WizardFragment {
     });
     
     return cloudSdkComposite;
+  }
+
+  @VisibleForTesting
+  String getCloudSdkConfigurationMessage() {
+    if (cloudSdkLocation != null) {
+      return NLS.bind(Messages.RUNTIME_WIZARD_CLOUD_SDK_FOUND, cloudSdkLocation);
+    } else {
+      return Messages.RUNTIME_WIZARD_CLOUD_SDK_NOT_FOUND;
+    }
   }
 
   private String getCloudSdkLocation() {
