@@ -36,11 +36,10 @@ import org.eclipse.wst.server.ui.wizard.IWizardHandle;
 import org.eclipse.wst.server.ui.wizard.WizardFragment;
 
 public class LocalAppEngineServerWizardFragment extends WizardFragment {
-  final private boolean cloudSdkConfigured;
-  private String cloudSdkLocation = "";
+  private final String cloudSdkLocation;
 
   public LocalAppEngineServerWizardFragment() {
-    cloudSdkConfigured = isCloudSdkConfigured();
+    cloudSdkLocation = getCloudSdkLocation();
   }
 
   @Override
@@ -50,7 +49,7 @@ public class LocalAppEngineServerWizardFragment extends WizardFragment {
 
   @Override
   public boolean isComplete() {
-    return cloudSdkConfigured;
+    return (cloudSdkLocation != null);
   }
 
   @Override
@@ -64,8 +63,8 @@ public class LocalAppEngineServerWizardFragment extends WizardFragment {
     cloudSdkComposite.setLayout(layout);
   
     Label label = new Label(cloudSdkComposite, SWT.NONE);
-    if (cloudSdkConfigured) {
-      label.setText(NLS.bind(Messages.RUNTIME_WIZARD_CLOUD_SDK_FOUND, cloudSdkLocation)); // TODO: not printing out correctly
+    if (cloudSdkLocation != null) {
+      label.setText(NLS.bind(Messages.RUNTIME_WIZARD_CLOUD_SDK_FOUND, cloudSdkLocation));
     } else {
       label.setText(Messages.RUNTIME_WIZARD_CLOUD_SDK_NOT_FOUND);
     }
@@ -91,13 +90,12 @@ public class LocalAppEngineServerWizardFragment extends WizardFragment {
     return cloudSdkComposite;
   }
 
-  private boolean isCloudSdkConfigured() {
+  private String getCloudSdkLocation() {
     try {
       CloudSdk cloudSdk = new CloudSdk.Builder().build();
-      cloudSdkLocation = cloudSdk.getSdkPath().toString();
-      return true;
+      return cloudSdk.getSdkPath().toString();
     } catch (AppEngineException ex) {
-      return false;
+      return null;
     }
   }
 }
