@@ -16,13 +16,15 @@
 
 package com.google.cloud.tools.eclipse.appengine.newproject;
 
-import com.google.cloud.tools.appengine.cloudsdk.AppEngineJavaComponentsNotInstalledException;
+import com.google.cloud.tools.appengine.api.AppEngineException;
 import com.google.cloud.tools.appengine.cloudsdk.CloudSdk;
 import com.google.cloud.tools.eclipse.appengine.ui.AppEngineComponentPage;
 import com.google.cloud.tools.eclipse.sdk.ui.preferences.CloudSdkPrompter;
 import com.google.cloud.tools.eclipse.usagetracker.AnalyticsEvents;
 import com.google.cloud.tools.eclipse.usagetracker.AnalyticsPingManager;
-
+import com.google.cloud.tools.eclipse.util.status.StatusUtil;
+import java.io.File;
+import java.lang.reflect.InvocationTargetException;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -33,9 +35,6 @@ import org.eclipse.ui.INewWizard;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.ide.undo.WorkspaceUndoUtil;
 import org.eclipse.ui.statushandlers.StatusManager;
-
-import java.io.File;
-import java.lang.reflect.InvocationTargetException;
 
 public class StandardProjectWizard extends Wizard implements INewWizard {
 
@@ -92,33 +91,41 @@ public class StandardProjectWizard extends Wizard implements INewWizard {
     } catch (InterruptedException ex) {
       status = Status.CANCEL_STATUS;
     } catch (InvocationTargetException ex) {
-      status = setErrorStatus(ex.getCause());
+      status = setErrorStatus(this, ex.getCause());
     }
 
     return status.isOK();
   }
 
-  // visible for testing
-  static IStatus setErrorStatus(Throwable ex) {
-    int errorCode = 1;
+  public static IStatus setErrorStatus(Object origin, Throwable ex) {
     String message = "Failed to create project";
     if (ex.getMessage() != null && !ex.getMessage().isEmpty()) {
       message += ": " + ex.getMessage();
     }
-    IStatus status = new Status(Status.ERROR, "todo plugin ID", errorCode, message, ex);
+    IStatus status = StatusUtil.error(origin, message, ex);
     StatusManager.getManager().handle(status, StatusManager.SHOW | StatusManager.LOG);
     return status;
   }
 
   @Override
   public void init(IWorkbench workbench, IStructuredSelection selection) {
+    if (config.getCloudSdkLocation() == null) {
+      File location = CloudSdkPrompter.getCloudSdkLocation(getShell());
+      // if the user doesn't provide the Cloud SDK then we'll error in performFinish() too
+      if (location != null) {
+        config.setCloudSdkLocation(location);
+      }
+    }
   }
 
+  /**
+   * Verify that we're set up for App Engine Java development. This may cause a dialog to popup.
+   */
   private boolean appEngineJavaComponentExists() {
     try {
       new CloudSdk.Builder().build().validateAppEngineJavaComponents();
       return true;
-    } catch (AppEngineJavaComponentsNotInstalledException ex) {
+    } catch (AppEngineException ex) {
       return false;
     }
   }
