@@ -36,26 +36,26 @@ import org.eclipse.wst.server.ui.wizard.IWizardHandle;
 import org.eclipse.wst.server.ui.wizard.WizardFragment;
 
 public class LocalAppEngineServerWizardFragment extends WizardFragment {
-  private final String cloudSdkLocation;
+  private final boolean cloudSdkConfigured;
 
   public LocalAppEngineServerWizardFragment() {
-    cloudSdkLocation = getCloudSdkLocation();
+    cloudSdkConfigured = isCloudSdkConfigured();
   }
 
   @VisibleForTesting
-  LocalAppEngineServerWizardFragment(String cloudSdkLocation)
+  LocalAppEngineServerWizardFragment(boolean cloudSdkConfigured)
   {
-    this.cloudSdkLocation = cloudSdkLocation;
+    this.cloudSdkConfigured = cloudSdkConfigured;
   }
 
   @Override
   public boolean hasComposite() {
-    return (cloudSdkLocation == null);
+    return !cloudSdkConfigured;
   }
 
   @Override
   public boolean isComplete() {
-    return (cloudSdkLocation != null);
+    return cloudSdkConfigured;
   }
 
   @Override
@@ -92,12 +92,12 @@ public class LocalAppEngineServerWizardFragment extends WizardFragment {
     return cloudSdkComposite;
   }
 
-  private String getCloudSdkLocation() {
+  private boolean isCloudSdkConfigured() {
     try {
-      CloudSdk cloudSdk = new CloudSdk.Builder().build();
-      return cloudSdk.getSdkPath().toString();
+      new CloudSdk.Builder().build();
+      return true;
     } catch (AppEngineException ex) {
-      return null;
+      return false;
     }
   }
 }

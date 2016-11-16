@@ -24,25 +24,25 @@ public class LocalAppEngineServerWizardFragmentTest {
 
   @Test
   public void testHasComposite_cloudSdkExists() {
-    wizardFragment = new LocalAppEngineServerWizardFragment("cloudSdkLocation");
+    wizardFragment = new LocalAppEngineServerWizardFragment(true);
     Assert.assertFalse(wizardFragment.hasComposite());
   }
 
   @Test
   public void testHasComposite_cloudSdkDoesNotExists() {
-    wizardFragment = new LocalAppEngineServerWizardFragment(null);
+    wizardFragment = new LocalAppEngineServerWizardFragment(false);
     Assert.assertTrue(wizardFragment.hasComposite());
   }
 
   @Test
   public void testIsComplete_cloudSdkExists() {
-    wizardFragment = new LocalAppEngineServerWizardFragment("cloudSdkLocation");
+    wizardFragment = new LocalAppEngineServerWizardFragment(true);
     Assert.assertTrue(wizardFragment.isComplete());
   }
 
   @Test
   public void testIsComplete_cloudSdkDoesNotExists() {
-    wizardFragment = new LocalAppEngineServerWizardFragment(null);
+    wizardFragment = new LocalAppEngineServerWizardFragment(false);
     Assert.assertFalse(wizardFragment.isComplete());
   }
 }
