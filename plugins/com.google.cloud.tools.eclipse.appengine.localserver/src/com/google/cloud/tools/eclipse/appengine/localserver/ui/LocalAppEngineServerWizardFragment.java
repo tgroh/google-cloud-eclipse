@@ -23,7 +23,6 @@ import com.google.cloud.tools.eclipse.sdk.ui.preferences.CloudSdkPreferenceArea;
 import com.google.common.annotations.VisibleForTesting;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.preference.PreferenceDialog;
-import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -51,7 +50,7 @@ public class LocalAppEngineServerWizardFragment extends WizardFragment {
 
   @Override
   public boolean hasComposite() {
-    return true;
+    return (cloudSdkLocation == null);
   }
 
   @Override
@@ -70,7 +69,7 @@ public class LocalAppEngineServerWizardFragment extends WizardFragment {
     cloudSdkComposite.setLayout(layout);
 
     Label label = new Label(cloudSdkComposite, SWT.NONE);
-    label.setText(getCloudSdkConfigurationMessage());
+    label.setText(Messages.RUNTIME_WIZARD_CLOUD_SDK_NOT_FOUND);
 
     Button button = new Button(cloudSdkComposite, SWT.PUSH);
     button.setText("Update SDK Location");
@@ -91,15 +90,6 @@ public class LocalAppEngineServerWizardFragment extends WizardFragment {
     });
     
     return cloudSdkComposite;
-  }
-
-  @VisibleForTesting
-  String getCloudSdkConfigurationMessage() {
-    if (cloudSdkLocation != null) {
-      return NLS.bind(Messages.RUNTIME_WIZARD_CLOUD_SDK_FOUND, cloudSdkLocation);
-    } else {
-      return Messages.RUNTIME_WIZARD_CLOUD_SDK_NOT_FOUND;
-    }
   }
 
   private String getCloudSdkLocation() {

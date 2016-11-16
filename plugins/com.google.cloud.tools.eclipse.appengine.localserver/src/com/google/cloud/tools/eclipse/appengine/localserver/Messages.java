@@ -30,7 +30,6 @@ public class Messages extends NLS {
 
   public static String CREATE_APP_ENGINE_RUNTIME_WIZARD_DESCRIPTION;
   public static String CREATE_APP_ENGINE_RUNTIME_WIZARD_TITLE;
-  public static String RUNTIME_WIZARD_CLOUD_SDK_FOUND;
   public static String RUNTIME_WIZARD_CLOUD_SDK_NOT_FOUND;
   public static String RUNTIME_WIZARD_OPEN_CLOUD_SDK_DIALOG_MESSAGE;
   public static String RUNTIME_WIZARD_OPEN_CLOUD_SDK_DIALOG_TITLE;

@@ -16,8 +16,6 @@
 
 package com.google.cloud.tools.eclipse.appengine.localserver.ui;
 
-import com.google.cloud.tools.eclipse.appengine.localserver.Messages;
-import org.eclipse.osgi.util.NLS;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -25,8 +23,14 @@ public class LocalAppEngineServerWizardFragmentTest {
   private LocalAppEngineServerWizardFragment wizardFragment;
 
   @Test
-  public void testHasComposite() {
-    wizardFragment = new LocalAppEngineServerWizardFragment();
+  public void testHasComposite_cloudSdkExists() {
+    wizardFragment = new LocalAppEngineServerWizardFragment("cloudSdkLocation");
+    Assert.assertFalse(wizardFragment.hasComposite());
+  }
+
+  @Test
+  public void testHasComposite_cloudSdkDoesNotExists() {
+    wizardFragment = new LocalAppEngineServerWizardFragment(null);
     Assert.assertTrue(wizardFragment.hasComposite());
   }
 
@@ -40,19 +44,5 @@ public class LocalAppEngineServerWizardFragmentTest {
   public void testIsComplete_cloudSdkDoesNotExists() {
     wizardFragment = new LocalAppEngineServerWizardFragment(null);
     Assert.assertFalse(wizardFragment.isComplete());
-  }
-
-  @Test
-  public void testCloudSdkConfigurationMessage_cloudSdkExists() {
-    wizardFragment = new LocalAppEngineServerWizardFragment("cloudSdkLocation");
-    Assert.assertEquals(NLS.bind(Messages.RUNTIME_WIZARD_CLOUD_SDK_FOUND, "cloudSdkLocation"), 
-        wizardFragment.getCloudSdkConfigurationMessage());
-  }
-
-  @Test
-  public void testCloudSdkConfigurationMessage_cloudSdkDoesNotExists() {
-    wizardFragment = new LocalAppEngineServerWizardFragment(null);
-    Assert.assertEquals(Messages.RUNTIME_WIZARD_CLOUD_SDK_NOT_FOUND,
-        wizardFragment.getCloudSdkConfigurationMessage());
   }
 }
