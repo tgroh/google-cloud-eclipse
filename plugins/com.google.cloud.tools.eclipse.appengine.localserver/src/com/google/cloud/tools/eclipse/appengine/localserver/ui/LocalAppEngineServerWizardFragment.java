@@ -109,7 +109,7 @@ public class LocalAppEngineServerWizardFragment extends WizardFragment {
     dialogFinished = true;
   }
 
-  private boolean isCloudSdkConfigured() {
+  private static boolean isCloudSdkConfigured() {
     try {
       new CloudSdk.Builder().build();
       return true;
