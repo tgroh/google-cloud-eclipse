@@ -21,22 +21,25 @@ import com.google.cloud.tools.appengine.cloudsdk.CloudSdk;
 import com.google.cloud.tools.eclipse.appengine.localserver.Messages;
 import com.google.cloud.tools.eclipse.sdk.ui.preferences.CloudSdkPreferenceArea;
 import com.google.common.annotations.VisibleForTesting;
-import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.preference.PreferenceDialog;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.DisposeEvent;
+import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.eclipse.wst.server.ui.wizard.IWizardHandle;
 import org.eclipse.wst.server.ui.wizard.WizardFragment;
 
+// TODO: Fix 'Edit' button
 public class LocalAppEngineServerWizardFragment extends WizardFragment {
-  private final boolean cloudSdkConfigured;
+  private boolean cloudSdkConfigured;
+  private boolean dialogFinished = false;
+  private boolean enableFinishButton;
 
   public LocalAppEngineServerWizardFragment() {
     cloudSdkConfigured = isCloudSdkConfigured();
@@ -55,14 +58,26 @@ public class LocalAppEngineServerWizardFragment extends WizardFragment {
 
   @Override
   public boolean isComplete() {
-    return cloudSdkConfigured;
+    return cloudSdkConfigured || enableFinishButton;
+  }
+
+  @Override
+  public void enter() {
+    cloudSdkConfigured = isCloudSdkConfigured();
+    dialogFinished = false;
+    enableFinishButton = true;
+  }
+
+  @Override
+  public void exit() {
+    enableFinishButton = false;
   }
 
   @Override
   public Composite createComposite(final Composite parent, IWizardHandle wizard) {
     wizard.setTitle(Messages.CREATE_APP_ENGINE_RUNTIME_WIZARD_TITLE);
     wizard.setDescription(Messages.CREATE_APP_ENGINE_RUNTIME_WIZARD_DESCRIPTION);
-    
+
     Composite cloudSdkComposite = new Composite(parent, SWT.NONE);
     GridLayout layout = new GridLayout();
     layout.numColumns = 1;
@@ -71,25 +86,27 @@ public class LocalAppEngineServerWizardFragment extends WizardFragment {
     Label label = new Label(cloudSdkComposite, SWT.NONE);
     label.setText(Messages.RUNTIME_WIZARD_CLOUD_SDK_NOT_FOUND);
 
-    Button button = new Button(cloudSdkComposite, SWT.PUSH);
-    button.setText("Update SDK Location");
-    button.addSelectionListener(new SelectionAdapter() {
-      @Override
-      public void widgetSelected(SelectionEvent event) {
-        Shell shell = parent.getShell();
-        if (!MessageDialog.openQuestion(shell, Messages.RUNTIME_WIZARD_OPEN_CLOUD_SDK_DIALOG_TITLE, 
-            Messages.RUNTIME_WIZARD_OPEN_CLOUD_SDK_DIALOG_MESSAGE)) {
-          return;
-        }
-        shell.close();
+    final Button cloudSdkButton = new Button(cloudSdkComposite, SWT.CHECK);
+    cloudSdkButton.setText(Messages.OPEN_CLOUD_SDK_PREFERNCE_BUTTON);
 
-        PreferenceDialog dialog =
-            PreferencesUtil.createPreferenceDialogOn(null, CloudSdkPreferenceArea.PAGE_ID, null, null);
-        dialog.open();
+    parent.addDisposeListener(new DisposeListener() {
+      @Override
+      public void widgetDisposed(DisposeEvent event) {
+        if (dialogFinished && cloudSdkButton.getSelection()) {
+          PreferenceDialog dialog =
+              PreferencesUtil.createPreferenceDialogOn(null, CloudSdkPreferenceArea.PAGE_ID, null, null);
+          dialog.open();
+        }
       }
+
     });
-    
+
     return cloudSdkComposite;
+  }
+
+  @Override
+  public void performFinish(IProgressMonitor monitor) throws CoreException {
+    dialogFinished = true;
   }
 
   private boolean isCloudSdkConfigured() {
