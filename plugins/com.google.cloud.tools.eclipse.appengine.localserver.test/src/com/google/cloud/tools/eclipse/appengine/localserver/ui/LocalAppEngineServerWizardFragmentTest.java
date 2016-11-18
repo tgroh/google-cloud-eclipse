@@ -44,5 +44,8 @@ public class LocalAppEngineServerWizardFragmentTest {
   public void testIsComplete_cloudSdkDoesNotExists() {
     wizardFragment = new LocalAppEngineServerWizardFragment(false);
     Assert.assertFalse(wizardFragment.isComplete());
+
+    wizardFragment.enter();
+    Assert.assertTrue(wizardFragment.isComplete());
   }
 }
