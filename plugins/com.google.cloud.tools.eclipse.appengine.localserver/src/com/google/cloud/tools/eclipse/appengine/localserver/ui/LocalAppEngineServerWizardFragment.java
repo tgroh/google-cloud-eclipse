@@ -87,7 +87,7 @@ public class LocalAppEngineServerWizardFragment extends WizardFragment {
     label.setText(Messages.RUNTIME_WIZARD_CLOUD_SDK_NOT_FOUND);
 
     final Button cloudSdkButton = new Button(cloudSdkComposite, SWT.CHECK);
-    cloudSdkButton.setText(Messages.OPEN_CLOUD_SDK_PREFERNCE_BUTTON);
+    cloudSdkButton.setText(Messages.OPEN_CLOUD_SDK_PREFERENCE_BUTTON);
 
     parent.addDisposeListener(new DisposeListener() {
       @Override
