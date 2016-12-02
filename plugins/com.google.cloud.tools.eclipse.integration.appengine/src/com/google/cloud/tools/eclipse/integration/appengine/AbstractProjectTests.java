@@ -16,7 +16,6 @@
 
 package com.google.cloud.tools.eclipse.integration.appengine;
 
-import com.google.cloud.tools.appengine.cloudsdk.CloudSdk;
 import com.google.cloud.tools.eclipse.swtbot.SwtBotProjectActions;
 import com.google.cloud.tools.eclipse.swtbot.SwtBotWorkbenchActions;
 
@@ -36,9 +35,6 @@ public class AbstractProjectTests {
 
   @BeforeClass
   public static void setUp() throws Exception {
-    // verify we can find the Google Cloud SDK
-    new CloudSdk.Builder().build().validateCloudSdk();
-
     bot = new SWTWorkbenchBot();
     SwtBotWorkbenchActions.closeWelcome(bot);
   }
@@ -57,14 +53,14 @@ public class AbstractProjectTests {
   /**
    * Returns the named project; it may not yet exist.
    */
-  protected IProject findProject(String projectName) {
+  private static IProject findProject(String projectName) {
     return ResourcesPlugin.getWorkspace().getRoot().getProject(projectName);
   }
 
   /**
    * Return true if a project with the given name exists.
    */
-  protected boolean projectExists(String projectName) {
+  protected static boolean projectExists(String projectName) {
     IProject project = findProject(projectName);
     return project.exists();
   }
