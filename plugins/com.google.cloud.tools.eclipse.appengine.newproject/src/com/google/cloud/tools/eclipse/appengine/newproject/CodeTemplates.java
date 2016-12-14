@@ -16,11 +16,13 @@
 
 package com.google.cloud.tools.eclipse.appengine.newproject;
 
+import com.google.cloud.tools.eclipse.util.templates.appengine.AppEngineTemplateUtility;
+import com.google.common.annotations.VisibleForTesting;
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
@@ -31,14 +33,11 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.SubMonitor;
 
-import com.google.cloud.tools.eclipse.util.templates.appengine.AppEngineTemplateUtility;
-import com.google.common.annotations.VisibleForTesting;
-
 public class CodeTemplates {
 
   /**
    * Load the named template into the supplied Eclipse project.
-   *  
+   *
    * @param project the Eclipse project to be filled with templated code
    * @param config replacement values
    * @param monitor progress monitor
@@ -54,10 +53,10 @@ public class CodeTemplates {
     if (!src.exists()) {
       src.create(force, local, subMonitor);
     }
-    IFolder main = createChildFolder("main", src, subMonitor);
-    IFolder java = createChildFolder("java", main, subMonitor);
-    IFolder test = createChildFolder("test", src, subMonitor);
-    IFolder testJava = createChildFolder("java", test, subMonitor);
+    IContainer main = createChildFolder("main", src, subMonitor);
+    IContainer java = createChildFolder("java", main, subMonitor);
+    IContainer test = createChildFolder("test", src, subMonitor);
+    IContainer testJava = createChildFolder("java", test, subMonitor);
 
     String packageName = config.getPackageName();
 
@@ -67,13 +66,13 @@ public class CodeTemplates {
     } else {
       templateValues.put("package", "");
     }
-    
-    IFolder packageFolder = createFoldersForPackage(java, packageName, subMonitor);
+
+    IContainer packageFolder = createFoldersForPackage(java, packageName, subMonitor);
     createChildFile("HelloAppEngine.java", AppEngineTemplateUtility.HELLO_APPENGINE_TEMPLATE,
         packageFolder, subMonitor, templateValues);
 
     // now set up the test directory
-    IFolder testPackageFolder = createFoldersForPackage(testJava, packageName, subMonitor);
+    IContainer testPackageFolder = createFoldersForPackage(testJava, packageName, subMonitor);
     createChildFile("HelloAppEngineTest.java",
         AppEngineTemplateUtility.HELLO_APPENGINE_TEST_TEMPLATE, testPackageFolder, subMonitor,
         templateValues);
@@ -81,8 +80,8 @@ public class CodeTemplates {
         AppEngineTemplateUtility.MOCK_HTTPSERVLETRESPONSE_TEMPLATE, testPackageFolder, subMonitor,
         templateValues);
 
-    IFolder webapp = createChildFolder("webapp", main, subMonitor);
-    IFolder webinf = createChildFolder("WEB-INF", webapp, subMonitor);
+    IContainer webapp = createFolders(project, config.getWebContentPath(), subMonitor);
+    IContainer webinf = createChildFolder("WEB-INF", webapp, subMonitor);
 
     Map<String, String> properties = new HashMap<>();
     createChildFile("appengine-web.xml", AppEngineTemplateUtility.APPENGINE_WEB_XML_TEMPLATE,
@@ -98,34 +97,41 @@ public class CodeTemplates {
         Collections.<String, String>emptyMap());
   }
 
-  private static IFolder createFoldersForPackage(IFolder parentFolder,
-                                                 String packageName,
-                                                 SubMonitor subMonitor) throws CoreException {
-    IFolder folder = parentFolder;
-    if (packageName != null && !packageName.isEmpty()) {
-      String[] packages = packageName.split("\\.");
-      for (int i = 0; i < packages.length; i++) {
-        folder = createChildFolder(packages[i], folder, subMonitor);
+  private static IContainer createFoldersForPackage(IContainer parentFolder,
+                                                    String packageName,
+                                                    SubMonitor subMonitor) throws CoreException {
+    String path = packageName.replace('.', File.separatorChar);
+    return createFolders(parentFolder, path, subMonitor);
+  }
+
+  private static IContainer createFolders(IContainer parentFolder,
+                                          String path,
+                                          SubMonitor subMonitor) throws CoreException {
+    IContainer folder = parentFolder;
+    if (path != null && !path.isEmpty()) {
+      String[] directories = path.split(File.separator);
+      for (String directory : directories) {
+        folder = createChildFolder(directory, folder, subMonitor);
       }
     }
     return folder;
   }
 
   @VisibleForTesting
-  static IFolder createChildFolder(String name, IFolder parent, SubMonitor monitor) 
+  static IContainer createChildFolder(String name, IContainer parent, SubMonitor monitor)
       throws CoreException {
     monitor.subTask("Creating folder " + name);
     monitor.newChild(10);
 
     boolean force = true;
     boolean local = true;
-    IFolder child = parent.getFolder(name);
+    IFolder child = parent.getFolder(new Path(name));
     if (!child.exists()) {
       child.create(force, local, monitor);
     }
     return child;
   }
-  
+
   @VisibleForTesting
   static IFile createChildFile(String name, String template, IContainer parent, SubMonitor monitor,
       Map<String, String> values) throws CoreException {

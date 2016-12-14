@@ -16,6 +16,7 @@
 
 package com.google.cloud.tools.eclipse.appengine.newproject;
 
+import com.google.cloud.tools.eclipse.appengine.facets.WebProjectUtil;
 import com.google.cloud.tools.eclipse.appengine.libraries.model.Library;
 import com.google.cloud.tools.eclipse.appengine.ui.AppEngineImages;
 import com.google.cloud.tools.eclipse.appengine.ui.AppEngineLibrariesSelectorGroup;
@@ -40,6 +41,7 @@ import org.eclipse.ui.dialogs.WizardNewProjectCreationPage;
  */
 public class AppEngineStandardWizardPage extends WizardNewProjectCreationPage {
 
+  private Text webContentPathField;
   private Text javaPackageField;
   private AppEngineLibrariesSelectorGroup appEngineLibrariesSelectorGroup;
 
@@ -65,6 +67,12 @@ public class AppEngineStandardWizardPage extends WizardNewProjectCreationPage {
         "com.google.cloud.tools.eclipse.appengine.newproject.NewProjectContext"); //$NON-NLS-1$
 
     ModifyListener pageValidator = new PageValidator();
+
+    Label webContentPathLabel = new Label(container, SWT.NONE);
+    webContentPathLabel.setText(Messages.getString("web.content.path")); //$NON-NLS-1$
+    webContentPathField = new Text(container, SWT.BORDER);
+    webContentPathField.setText(WebProjectUtil.DEFAULT_WEB_PATH);
+    webContentPathField.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
     // Java package name
     Label packageNameLabel = new Label(container, SWT.NONE);
@@ -115,6 +123,10 @@ public class AppEngineStandardWizardPage extends WizardNewProjectCreationPage {
     public void modifyText(ModifyEvent event) {
       setPageComplete(validatePage());
     }
+  }
+
+  public String getWebContentPath() {
+    return webContentPathField.getText();
   }
 
   public String getPackageName() {

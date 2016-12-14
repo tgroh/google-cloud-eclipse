@@ -17,6 +17,7 @@
 package com.google.cloud.tools.eclipse.appengine.newproject.maven;
 
 import com.google.cloud.tools.eclipse.appengine.facets.AppEngineStandardFacet;
+import com.google.cloud.tools.eclipse.appengine.facets.WebProjectUtil;
 import com.google.cloud.tools.eclipse.appengine.libraries.model.Library;
 import com.google.cloud.tools.eclipse.util.MavenUtils;
 import java.lang.reflect.InvocationTargetException;
@@ -95,8 +96,10 @@ public class CreateMavenBasedAppEngineStandardProject extends WorkspaceModifyOpe
     for (IProject project : archetypeProjects) {
       IFacetedProject facetedProject = ProjectFacetsManager.create(
           project, true, loopMonitor.newChild(1));
-      AppEngineStandardFacet.installAppEngineFacet(facetedProject,
-          true /* installDependentFacets */, loopMonitor.newChild(1));
+      AppEngineStandardFacet.installJavaFacet(facetedProject, loopMonitor.newChild(1));
+      AppEngineStandardFacet.installWebFacet(facetedProject,
+          WebProjectUtil.DEFAULT_WEB_PATH, loopMonitor.newChild(1));
+      AppEngineStandardFacet.installAppEngineFacet(facetedProject, loopMonitor.newChild(1));
     }
 
     /*

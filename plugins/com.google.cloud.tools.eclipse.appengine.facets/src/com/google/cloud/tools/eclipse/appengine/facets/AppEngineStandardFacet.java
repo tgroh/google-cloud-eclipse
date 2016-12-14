@@ -106,19 +106,11 @@ public class AppEngineStandardFacet {
    * the App Engine facet.
    *
    * @param facetedProject the faceted project receiving the App Engine facet
-   * @param installDependentFacets true if the facets required by the App Engine facet should be installed,
-   *   false otherwise
    * @param monitor the progress monitor
    * @throws CoreException if anything goes wrong during install
    */
-  public static void installAppEngineFacet(IFacetedProject facetedProject, boolean installDependentFacets, IProgressMonitor monitor)
+  public static void installAppEngineFacet(IFacetedProject facetedProject, IProgressMonitor monitor)
       throws CoreException {
-    // Install required App Engine facets i.e. Java 1.7 and Dynamic Web Module 2.5
-    if (installDependentFacets) {
-      installJavaFacet(facetedProject, monitor);
-      installWebFacet(facetedProject, monitor);
-    }
-
     IProjectFacet appEngineFacet = ProjectFacetsManager.getProjectFacet(AppEngineStandardFacet.ID);
     IProjectFacetVersion appEngineFacetVersion = appEngineFacet.getVersion(AppEngineStandardFacet.VERSION);
 
@@ -198,7 +190,7 @@ public class AppEngineStandardFacet {
   /**
    * Installs Java 1.7 facet if it doesn't already exist in <code>factedProject</code>
    */
-  private static void installJavaFacet(IFacetedProject facetedProject, IProgressMonitor monitor)
+  public static void installJavaFacet(IFacetedProject facetedProject, IProgressMonitor monitor)
       throws CoreException {
     if (facetedProject.hasProjectFacet(JavaFacet.VERSION_1_7)) {
       return;
@@ -215,8 +207,10 @@ public class AppEngineStandardFacet {
 
   /**
    * Installs Dynamic Web Module 2.5 facet if it doesn't already exits in <code>factedProject</code>
+   * @param webContentPath default web application directory (where WEB-INF will be created)
    */
-  private static void installWebFacet(IFacetedProject facetedProject, IProgressMonitor monitor)
+  public static void installWebFacet(IFacetedProject facetedProject,
+      String webContentPath, IProgressMonitor monitor)
       throws CoreException {
     if (facetedProject.hasProjectFacet(WebFacetUtils.WEB_25)) {
       return;
@@ -226,7 +220,7 @@ public class AppEngineStandardFacet {
     webModel.setBooleanProperty(IJ2EEModuleFacetInstallDataModelProperties.ADD_TO_EAR, false);
     webModel.setBooleanProperty(IJ2EEFacetInstallDataModelProperties.GENERATE_DD, false);
     webModel.setBooleanProperty(IWebFacetInstallDataModelProperties.INSTALL_WEB_LIBRARY, false);
-    webModel.setStringProperty(IWebFacetInstallDataModelProperties.CONFIG_FOLDER, "src/main/webapp");
+    webModel.setStringProperty(IWebFacetInstallDataModelProperties.CONFIG_FOLDER, webContentPath);
     facetedProject.installProjectFacet(WebFacetUtils.WEB_25, webModel, monitor);
   }
 
@@ -234,9 +228,9 @@ public class AppEngineStandardFacet {
     org.eclipse.wst.server.core.IRuntime[] allRuntimes = ServerCore.getRuntimes();
     List<org.eclipse.wst.server.core.IRuntime> appEngineRuntimes = new ArrayList<>();
 
-    for (int i = 0; i < allRuntimes.length; i++) {
-      if (isAppEngineStandardRuntime(allRuntimes[i])) {
-        appEngineRuntimes.add(allRuntimes[i]);
+    for (org.eclipse.wst.server.core.IRuntime runtime : allRuntimes) {
+      if (isAppEngineStandardRuntime(runtime)) {
+        appEngineRuntimes.add(runtime);
       }
     }
 

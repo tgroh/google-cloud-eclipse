@@ -34,6 +34,7 @@ class AppEngineStandardProjectConfig {
   private String packageName = "";
   private IProject project;
   private List<Library> appEngineLibraries = Collections.emptyList();
+  private String webContentPath;
 
   public File getCloudSdkLocation() {
     return cloudSdkLocation;
@@ -42,7 +43,7 @@ class AppEngineStandardProjectConfig {
   public void setCloudSdkLocation(File cloudSdkLocation) {
     this.cloudSdkLocation = cloudSdkLocation;
   }
-  
+
   public void setPackageName(String name) {
     this.packageName = name;
   }
@@ -78,4 +79,11 @@ class AppEngineStandardProjectConfig {
     this.appEngineLibraries = new ArrayList<>(libraries);
   }
 
+  public String getWebContentPath() {
+    return webContentPath;
+  }
+
+  public void setWebContentPath(String webContentPath) {
+    this.webContentPath = webContentPath;
+  }
 }

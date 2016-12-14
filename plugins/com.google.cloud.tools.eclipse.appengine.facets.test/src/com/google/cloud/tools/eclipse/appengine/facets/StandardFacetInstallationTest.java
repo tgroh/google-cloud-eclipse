@@ -56,7 +56,7 @@ public class StandardFacetInstallationTest {
     IProject project = projects.get(0);
     IFacetedProject facetedProject = new FacetedProjectHelper().getFacetedProject(project);
     // verify that the appengine-web.xml is installed in the dynamic web root folder
-    AppEngineStandardFacet.installAppEngineFacet(facetedProject, true, null);
+    AppEngineStandardFacet.installAppEngineFacet(facetedProject, null);
     IFile correctAppEngineWebXml = project.getFile(new Path("war/WEB-INF/appengine-web.xml"));
     IFile wrongAppEngineWebXml =
         project.getFile(new Path("src/main/webapp/WEB-INF/appengine-web.xml"));
