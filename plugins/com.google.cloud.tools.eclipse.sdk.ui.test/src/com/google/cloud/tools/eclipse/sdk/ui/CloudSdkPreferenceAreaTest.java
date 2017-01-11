@@ -44,7 +44,8 @@ import java.io.File;
 @RunWith(MockitoJUnitRunner.class)
 public class CloudSdkPreferenceAreaTest {
   
-  @Mock IPreferenceStore preferences;
+  @Mock
+  private IPreferenceStore preferences;
 
   private CloudSdkPreferenceArea area;
   private Shell shell;
