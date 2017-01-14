@@ -146,6 +146,12 @@
       <artifactId>jetty-util</artifactId>
       <version>6.1.26</version>
     </dependency>
+    <dependency>
+      <!-- bundle: com.google.protobuf -->
+      <groupId>com.google.protobuf</groupId>
+      <artifactId>protobuf-java</artifactId>
+      <version>2.6.0</version>
+    </dependency>
   </dependencies>
 
   <build>

@@ -31,8 +31,13 @@ public class GoogleFeedbackErrorReporter {
   public String sendFeedback(String productName, String packageName, Throwable exception,
       Map<String, String> params, String errorMessage, String errorDescription, String version)
       throws IOException {
-    return AnonymousFeedback.sendFeedback(productName, packageName, connectionFactory, exception,
-        params, errorMessage, errorDescription, version);
+    if (true) {
+      return AnonymousFeedback.sendFeedback(productName, packageName, connectionFactory, exception,
+          params, errorMessage, errorDescription, version);
+    } else {
+      System.err.println("Submitting problem report: " + params);
+      return "NOT ACTUALLY SUBMITTED";
+    }
   }
 
 }

@@ -117,7 +117,10 @@ public class GoogleFeedbackServerConnection implements IServerConnection {
     // Could check if we've already reported this incident
     if (!neverSend() && statusFilters.apply(status)) {
       state.setStatus(ProblemStatus.NEEDINFO);
-      state.setMessage(status.getMessage());
+      state.setMessage(
+          "An error occurred involving Google Cloud Tools for Eclipse. "
+              + "Please send it to Google for further examination. "
+              + "If possible, please specify the severity and steps to reproduce.");
     } else {
       state.setStatus(ProblemStatus.IGNORED); // not interested
     }
@@ -157,25 +160,18 @@ public class GoogleFeedbackServerConnection implements IServerConnection {
       throws IOException {
     IReport report = transform(status, context); // seems odd that we re-transform it
 
-    String applicationVersion = getFeatureVersion();
+    String applicationVersion = nullToNone(getFeatureVersion());
     String errorDescription = report.getComment();
     Map<String, String> params = buildKeyValuesMap(report);
 
-    boolean enabled = false;
     IProblemState response = IModelFactory.eINSTANCE.createProblemState();
-    if (enabled) {
-      // Hmm, by providing the exception.getException() we expose the unanonymized trace
-      String result = reporter.sendFeedback(CT4E_PRODUCT, CT4E_PACKAGE_NAME, status.getException(),
-          params, status.getMessage(), errorDescription,
-          applicationVersion);
-      response.setMessage(result);
-    } else {
-      System.err.println("Submitting problem report: " + params);
-      response.setMessage("NOT ACTUALLY SUBMITTED");
-    }
-
+    // Hmm, by providing the exception.getException() we expose the unanonymized trace
+    String result = reporter.sendFeedback(CT4E_PRODUCT, CT4E_PACKAGE_NAME, status.getException(),
+        params, status.getMessage(), errorDescription, applicationVersion);
+    // FIXME: Result is a number, e.g., 1484376400916
+    response.setMessage("Case number: " + result);
     response.setStatus(ProblemStatus.NEW);
-    // ?? Links.addLink(response, Links.REL_SUBMISSION, result, "Submission");
+    // Links.addLink(response, Links.REL_SUBMISSION, resultAsUrl, "Submission");
     return response;
   }
 

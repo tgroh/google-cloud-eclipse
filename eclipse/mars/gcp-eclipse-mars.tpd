@@ -30,15 +30,17 @@ location "http://download.eclipse.org/releases/mars/" {
 	org.eclipse.datatools.sdk.feature.feature.group
 	org.eclipse.swtbot.eclipse.feature.group
 	
-	org.eclipse.epp.logging.aeri.feature.feature.group
-	org.eclipse.epp.logging.aeri.feature.source.feature.group
-	
 	org.eclipse.jetty.http
 	org.eclipse.jetty.servlet
 	org.eclipse.jetty.server
 	org.eclipse.jetty.util
 	
 	ch.qos.logback.slf4j
+}
+
+location "http://download.eclipse.org/technology/epp/logging/stable/" {
+	org.eclipse.epp.logging.aeri.feature.feature.group
+	org.eclipse.epp.logging.aeri.feature.source.feature.group
 }
 
 location "http://download.eclipse.org/webtools/repository/mars/" {
