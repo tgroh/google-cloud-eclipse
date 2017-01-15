@@ -28,6 +28,7 @@ public class GoogleFeedbackErrorReporter {
   private static final AnonymousFeedback.HttpConnectionFactory connectionFactory =
       new HttpConnectionFactory();
 
+  /** Returns the feedback report token. */
   public String sendFeedback(String productName, String packageName, Throwable exception,
       Map<String, String> params, String errorMessage, String errorDescription, String version)
       throws IOException {

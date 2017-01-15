@@ -17,8 +17,8 @@
 package com.google.cloud.tools.eclipse.aeri;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableMap;
 import java.io.IOException;
+import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -30,6 +30,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.e4.core.contexts.IEclipseContext;
+import org.eclipse.emf.common.util.EMap;
 import org.eclipse.epp.logging.aeri.core.IModelFactory;
 import org.eclipse.epp.logging.aeri.core.IProblemState;
 import org.eclipse.epp.logging.aeri.core.IReport;
@@ -84,15 +85,20 @@ public class GoogleFeedbackServerConnection implements IServerConnection {
   @VisibleForTesting
   static final String PLUGIN_VERSION = "plugin.version";
 
-  private static final String CTE_FEATURE_ID_PREFIX = "com.google.cloud.tools.eclipse.suite";
+  /** Prefix of our CT4E feature. */
+  private static final String CT4E_FEATURE_ID_PREFIX = "com.google.cloud.tools.eclipse.suite";
 
   private ISystemSettings settings;
+
   @VisibleForTesting
   GoogleFeedbackErrorReporter reporter;
 
   // FIXME: statusFilters should be Predicate<? super IStatus> but
   // leads to a Guava mismatch as AERI requires guava [15,16)
   private RequiredPackagesFilter statusFilters;
+  private List<Pattern> requiredPatterns;
+
+  /** Class patterns to preserve when anonymizing stack traces. */
   private List<Pattern> acceptedPatterns;
 
   @Inject
@@ -100,10 +106,12 @@ public class GoogleFeedbackServerConnection implements IServerConnection {
     this.settings = settings;
     this.reporter = new GoogleFeedbackErrorReporter();
     
+    requiredPatterns = Arrays.asList(Pattern.compile("com\\.google\\.cloud\\.tools\\..*"));
+    statusFilters = new RequiredPackagesFilter(requiredPatterns);
+
     acceptedPatterns = Arrays.asList(Pattern.compile("java\\..*"), Pattern.compile("javax\\..*"),
         Pattern.compile("sun\\..*"), Pattern.compile("org\\.eclipse\\..*"),
         Pattern.compile("com\\.google\\..*"));
-    statusFilters = new RequiredPackagesFilter(acceptedPatterns);
   }
 
   private boolean neverSend() {
@@ -115,6 +123,7 @@ public class GoogleFeedbackServerConnection implements IServerConnection {
       IProgressMonitor monitor) {
     IProblemState state = IModelFactory.eINSTANCE.createProblemState();
     // Could check if we've already reported this incident
+    // Should we only accept IStatus.ERROR?
     if (!neverSend() && statusFilters.apply(status)) {
       state.setStatus(ProblemStatus.NEEDINFO);
       state.setMessage(
@@ -141,7 +150,12 @@ public class GoogleFeedbackServerConnection implements IServerConnection {
     report.setEmail(options.getReporterEmail());
     report.setSeverity(options.getSeverity());
 
+    buildKeyValuesMap(report);
 
+    /*
+     * Anonymization is performed by one of the many report processors, which are controlled by the
+     * reporting UI. We can force anonymization of the data here.
+     */
     // if (options.isAnonymizeMessages()) {
     // Reports.anonymizeMessages(report);
     // }
@@ -160,28 +174,31 @@ public class GoogleFeedbackServerConnection implements IServerConnection {
       throws IOException {
     IReport report = transform(status, context); // seems odd that we re-transform it
 
-    String applicationVersion = nullToNone(getFeatureVersion());
+    String errorMessage = status.getMessage();
     String errorDescription = report.getComment();
-    Map<String, String> params = buildKeyValuesMap(report);
+    Throwable exception = status.getException(); // this is not anonymized
+    Map<String, String> params = report.getAuxiliaryInformation().map();
+    String applicationVersion = nullToNone(getFeatureVersion());
 
     IProblemState response = IModelFactory.eINSTANCE.createProblemState();
-    // Hmm, by providing the exception.getException() we expose the unanonymized trace
-    String result = reporter.sendFeedback(CT4E_PRODUCT, CT4E_PACKAGE_NAME, status.getException(),
-        params, status.getMessage(), errorDescription, applicationVersion);
-    // FIXME: Result is a number, e.g., 1484376400916
-    response.setMessage("Case number: " + result);
+    String token = reporter.sendFeedback(CT4E_PRODUCT, CT4E_PACKAGE_NAME, exception, params,
+        errorMessage, errorDescription, applicationVersion);
+    // Result is a number, e.g., 1484376400916
+    response.setMessage(MessageFormat.format("Thank you: submitted as issue {0}.", token));
     response.setStatus(ProblemStatus.NEW);
+    // can add a set of links to the response, shown in the UI
     // Links.addLink(response, Links.REL_SUBMISSION, resultAsUrl, "Submission");
     return response;
   }
 
+  /** Return the version of the first com.google.cloud.tools.eclipse.suite* feature found. */
   private String getFeatureVersion() {
     IBundleGroupProvider[] providers = Platform.getBundleGroupProviders();
     if (providers != null) {
       for (IBundleGroupProvider provider : providers) {
         IBundleGroup[] bundleGroups = provider.getBundleGroups();
         for (IBundleGroup group : bundleGroups) {
-          if (group.getIdentifier().startsWith(CTE_FEATURE_ID_PREFIX)) {
+          if (group.getIdentifier().startsWith(CT4E_FEATURE_ID_PREFIX)) {
             return group.getVersion();
           }
         }
@@ -190,28 +207,25 @@ public class GoogleFeedbackServerConnection implements IServerConnection {
     return null;
   }
 
-  static Map<String, String> buildKeyValuesMap(IReport report) {
-    Map<String, String> params = ImmutableMap.<String, String>builder()
-        // required parameters
-        .put(ERROR_MESSAGE_KEY, nullToNone(report.getStatus().getMessage()))
-        .put(ERROR_STACKTRACE_KEY, formatStacktrace(report.getStatus().getException()))
-        // end of required parameters
-        .put(ERROR_DESCRIPTION_KEY, nullToNone(report.getComment()))
-        // .put(LAST_ACTION_KEY, nullToNone(error.getLastAction()))
-        .put(OS_NAME_KEY, System.getProperty(OS_NAME_KEY, NONE_STRING))
-        .put(JAVA_VERSION_KEY, System.getProperty(JAVA_VERSION_KEY, NONE_STRING))
-        .put(JAVA_VM_VENDOR_KEY, System.getProperty(JAVA_VM_VENDOR_KEY, NONE_STRING))
-        .put(APP_NAME_KEY, nullToNone(report.getEclipseProduct()))
-        .put(APP_NAME_VERSION_KEY, nullToNone(report.getEclipseBuildId()))
-        // .put(APP_VERSION_MAJOR_KEY, intelliJAppExtendedInfo.getMajorVersion())
-        // .put(APP_VERSION_MINOR_KEY, intelliJAppExtendedInfo.getMinorVersion())
-        // .put(APP_CODE_KEY, intelliJAppExtendedInfo.getPackageCode())
-        // .put(APP_EAP_KEY, Boolean.toString(intelliJAppExtendedInfo.isEAP()))
-        // .put(APP_INTERNAL_KEY, Boolean.toString(application.isInternal()))
-        // .put(PLUGIN_VERSION, error.getPluginVersion())
-        .build();
-
-    return params;
+  static void buildKeyValuesMap(IReport report) {
+    EMap<String, String> map = report.getAuxiliaryInformation();
+    // required parameters
+    map.put(ERROR_MESSAGE_KEY, nullToNone(report.getStatus().getMessage()));
+    map.put(ERROR_STACKTRACE_KEY, formatStacktrace(report.getStatus().getException()));
+    // end of required parameters
+    map.put(ERROR_DESCRIPTION_KEY, nullToNone(report.getComment()));
+    // .put(LAST_ACTION_KEY, nullToNone(error.getLastAction()))
+    map.put(OS_NAME_KEY, System.getProperty(OS_NAME_KEY, NONE_STRING));
+    map.put(JAVA_VERSION_KEY, System.getProperty(JAVA_VERSION_KEY, NONE_STRING));
+    map.put(JAVA_VM_VENDOR_KEY, System.getProperty(JAVA_VM_VENDOR_KEY, NONE_STRING));
+    map.put(APP_NAME_KEY, nullToNone(report.getEclipseProduct()));
+    map.put(APP_NAME_VERSION_KEY, nullToNone(report.getEclipseBuildId()));
+    // .put(APP_VERSION_MAJOR_KEY, intelliJAppExtendedInfo.getMajorVersion())
+    // .put(APP_VERSION_MINOR_KEY, intelliJAppExtendedInfo.getMinorVersion())
+    // .put(APP_CODE_KEY, intelliJAppExtendedInfo.getPackageCode())
+    // .put(APP_EAP_KEY, Boolean.toString(intelliJAppExtendedInfo.isEAP()))
+    // .put(APP_INTERNAL_KEY, Boolean.toString(application.isInternal()))
+    // .put(PLUGIN_VERSION, error.getPluginVersion())
   }
 
   /** Format the modelled stack trace. */
