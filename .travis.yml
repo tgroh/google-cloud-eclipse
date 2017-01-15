@@ -26,7 +26,9 @@ matrix:
     env: ECLIPSE_TARGET=neon
   - jdk: oraclejdk8
     env: ECLIPSE_TARGET=oxygen
-script: mvn -Ptravis --fail-at-end verify ${ECLIPSE_TARGET:+-Declipse.target=${ECLIPSE_TARGET}}
+script:
+    mvn -Ptravis --fail-at-end verify ${ECLIPSE_TARGET:+-Declipse.target=${ECLIPSE_TARGET}}
+     mvn cobertura:cobertura
 addons:
   apt:
     packages:
