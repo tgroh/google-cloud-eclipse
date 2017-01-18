@@ -117,34 +117,37 @@ fi
 ###############################################################################
 echo
 echo "#"
-echo "# Copy 'gs://gcloud-for-eclipse-testing/category.xml'"
+echo "# Copy 'gs://gcloud-for-eclipse-testing/invisible.{product,p2.inf}'"
 echo "# into '$WORK_DIR'."
 echo "#"
 ask_proceed
 
 set -x
-gsutil cp gs://gcloud-for-eclipse-testing/category.xml $WORK_DIR
+# note that the invisible.p2.inf is renamed p2.inf as required for the p2 ProductPublisher
+gsutil cp gs://gcloud-for-eclipse-testing/invisible.product $WORK_DIR
+gsutil cp gs://gcloud-for-eclipse-testing/invisible.p2.inf $WORK_DIR/p2.inf
 set +x
 
-if [ ! -e "$WORK_DIR/category.xml" ]; then
-    echo "The file was not copied. Halting."
+if [ ! -e "$WORK_DIR/invisible.product" -o ! -e "$WORK_DIR/p2.inf" ]; then
+    echo "The files were not copied. Halting."
     exit 1
 fi
 
 ###############################################################################
 echo
 echo "#"
-echo "# Run org.eclipse.equinox.p2.publisher.CategoryPublisher."
+echo "# Run org.eclipse.equinox.p2.publisher.ProductPublisher."
 echo "#"
 ask_proceed
 
 set -x
 $ECLIPSE_HOME/eclipse \
     -nosplash -console -consolelog \
-    -application org.eclipse.equinox.p2.publisher.CategoryPublisher \
+    -application org.eclipse.equinox.p2.publisher.ProductPublisher \
     -metadataRepository file:$LOCAL_REPO \
-    -categoryDefinition file:$WORK_DIR/category.xml \
-    -categoryQualifier
+    -productFile $WORK_DIR/invisible.product \
+    -flavor tooling \
+    -append
 set +x
 
 ###############################################################################

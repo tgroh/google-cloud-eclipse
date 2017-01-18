@@ -12,8 +12,7 @@ mkdir -p signed && chmod 777 signed
 mkdir -p signed/plugins && chmod 777 signed/plugins
 mkdir -p signed/features && chmod 777 signed/features
  
-cp index.html signed/index.html
-cp category.xml signed/category.xml
+cp index.html invisible.product invisible.p2.inf signed/
 
 FILES=plugins/*.jar
 for f in $FILES
