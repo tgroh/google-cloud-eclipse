@@ -20,6 +20,11 @@ elif [ ! -x "$ECLIPSE_HOME/eclipse" ]; then
     exit 1
 fi
 
+if ! `which -s xml`; then
+    echo "Cannot find xmlstartlet (xml). Halting."
+    exit 1
+fi
+
 WORK_DIR=$HOME/CT4E_release_work
 SIGNED_DIR=$WORK_DIR/signed
 LOCAL_REPO=$WORK_DIR/repository
@@ -89,7 +94,7 @@ ask_proceed
 ###############################################################################
 echo
 echo "#"
-echo "# Run Eclipse from the command line to generate a p2 repository from"
+echo "# Run Eclipse from the command line to generate a new p2 repository from"
 echo "# the signed artifacts:"
 echo "#"
 echo "#     $LOCAL_REPO/artifacts.xml"
@@ -137,8 +142,10 @@ fi
 ###############################################################################
 echo
 echo "#"
-echo "# Run org.eclipse.equinox.p2.publisher.ProductPublisher to create"
-echo "# category metadata for the public CTE feature:"
+echo "# Run org.eclipse.equinox.p2.publisher.ProductPublisher to add any"
+echo "# additional p2 metadata for the CT4E repository:
+echo "#   - copyright and license have been associated with our public feature
+echo "# Verify using xmlstarlet."
 echo "#"
 ask_proceed
 
@@ -151,6 +158,26 @@ $ECLIPSE_HOME/eclipse \
     -flavor tooling \
     -append
 set +x
+
+# Validate license and copyright
+repoName="Google Cloud Tools for Eclipse"
+categoryId=com.google.cloud.tools.eclipse.category
+featureId=com.google.cloud.tools.eclipse.suite.e45.feature.feature.group
+copyrightText="Copyright 2016, 2017 Google Inc."
+licenseUri=https://www.apache.org/licenses/LICENSE-2.0
+licensesText="Cloud Tools for Eclipse is made available under the Apache\
+ License, Version 2.0. Please visit the following URL for details:\
+ https://www.apache.org/licenses/LICENSE-2.0"
+
+valid=$(unzip -p gcp-repo/target/repository/content.jar \
+  | xml sel -t -m "/repository[@name='$repoName']/units/unit[@id='$categoryId']" \
+     -v "normalize-space(copyright)='$copyrightText' \
+         and normalize-space(licenses[@size=1]/license[@uri='$licenseUri'])='$licensesText' \
+         and requires[@size='1']/required/@name='$featureId'")
+if [ "$valid" != "true" ]; then
+    echo "$featureId is missing the copyright and license metadata. Halting."
+    exit 1
+fi
 
 ###############################################################################
 echo
