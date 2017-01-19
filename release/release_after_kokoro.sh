@@ -89,7 +89,8 @@ ask_proceed
 ###############################################################################
 echo
 echo "#"
-echo "# Run Eclipse from the command line to generate the following files:"
+echo "# Run Eclipse from the command line to generate a p2 repository from"
+echo "# the signed artifacts:"
 echo "#"
 echo "#     $LOCAL_REPO/artifacts.xml"
 echo "#     $LOCAL_REPO/content.xml"
@@ -136,7 +137,8 @@ fi
 ###############################################################################
 echo
 echo "#"
-echo "# Run org.eclipse.equinox.p2.publisher.ProductPublisher."
+echo "# Run org.eclipse.equinox.p2.publisher.ProductPublisher to create"
+echo "# category metadata for the public CTE feature:"
 echo "#"
 ask_proceed
 
