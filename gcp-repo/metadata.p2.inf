@@ -1,3 +1,10 @@
+#
+# A vehicle for adding any additional p2 metadata to the CT4E repository
+#
+
+############################################################################
+# Add our .suite feature to a category
+# We use this approach to add copyright and license information.
 # Follows the approach shown in
 # http://help.eclipse.org/neon/topic/org.eclipse.platform.doc.isv/guide/p2_customizing_metadata.html?cp=2_0_20_1_2#categoryGen
 
