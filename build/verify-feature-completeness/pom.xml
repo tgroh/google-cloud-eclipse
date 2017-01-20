@@ -11,10 +11,6 @@
   <artifactId>verify-feature-completeness</artifactId>
   <version>0.1.0-SNAPSHOT</version>
   <packaging>pom</packaging>
-
-  <properties>    
-    <cobertura.skip>true</cobertura.skip>
-  </properties>
   
   <name>Installation Testing for GCP</name>
   <description>
@@ -23,6 +19,7 @@
   </description>
 
   <properties>
+    <cobertura.skip>true</cobertura.skip>
     <installIUs>org.eclipse.platform.feature.group,com.google.cloud.tools.eclipse.suite.e45.feature.feature.group</installIUs>
     <build.rootUri>${project.baseUri}/../..</build.rootUri>
     <eclipse.repoUrl>${build.rootUri}/eclipse/ide-target-platform/target/repository</eclipse.repoUrl>
