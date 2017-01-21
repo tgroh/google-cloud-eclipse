@@ -28,6 +28,7 @@ Export-Package: com.google.api.client.auth.oauth2;x-friends:="com.google.cloud.t
  com.google.cloud.tools.eclipse.login.ui,
  com.google.cloud.tools.ide.login
 Import-Package: com.google.common.annotations,
+ com.google.common.base,
  com.google.common.collect,
  com.google.cloud.tools.eclipse.ui.util,
  com.google.cloud.tools.eclipse.usagetracker,
