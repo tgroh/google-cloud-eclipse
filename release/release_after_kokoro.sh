@@ -24,7 +24,7 @@ die() {
 [ ! -x "$ECLIPSE_HOME/eclipse" ] && \
     die "'$ECLIPSE_HOME/eclipse' is not an executable. Halting."
 
-if ! $(command -v xmlindent >/dev/null); then
+if ! $(command -v xmllint >/dev/null); then
     die "Cannot find xmllint. Halting."
 fi
 
