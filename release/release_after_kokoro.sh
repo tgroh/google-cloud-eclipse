@@ -24,8 +24,8 @@ die() {
 [ ! -x "$ECLIPSE_HOME/eclipse" ] && \
     die "'$ECLIPSE_HOME/eclipse' is not an executable. Halting."
 
-if ! `which -s xml`; then
-    echo "Cannot find xmlstartlet (xml). Halting."
+if ! $(command -v xmlindent >/dev/null); then
+    echo "Cannot find xmllint. Halting."
     exit 1
 fi
 
@@ -201,15 +201,16 @@ categoryId=com.google.cloud.tools.eclipse.category
 featureId=com.google.cloud.tools.eclipse.suite.e45.feature.feature.group
 copyrightText="Copyright 2016, 2017 Google Inc."
 licenseUri=https://www.apache.org/licenses/LICENSE-2.0
-licensesText="Cloud Tools for Eclipse is made available under the Apache\
+licenseText="Cloud Tools for Eclipse is made available under the Apache\
  License, Version 2.0. Please visit the following URL for details:\
  https://www.apache.org/licenses/LICENSE-2.0"
+categoryXPathExpr="/repository[@name='$repoName']/units/unit[@id='$categoryId']"
 
-valid=$(unzip -p gcp-repo/target/repository/content.jar \
-  | xml sel -t -m "/repository[@name='$repoName']/units/unit[@id='$categoryId']" \
-     -v "normalize-space(copyright)='$copyrightText' \
-         and normalize-space(licenses[@size=1]/license[@uri='$licenseUri'])='$licensesText' \
-         and requires[@size='1']/required/@name='$featureId'")
+valid=$(unzip -p $LOCAL_REPO/gcp-repo/target/repository/content.jar \
+  | xmllint --xpath \
+    "normalize-space(${categoryXPathExpr}/copyright)='$copyrightText' \
+        and normalize-space(${categoryXPathExpr}/licenses[@size=1]/license[@uri='$licenseUri'])='$licenseText' \
+        and ${categoryXPathExpr}/requires[@size='1']/required/@name='$featureId'" -)
 if [ "$valid" != "true" ]; then
     echo "$featureId is missing the copyright and license metadata. Halting."
     exit 1
