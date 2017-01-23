@@ -25,8 +25,7 @@ die() {
     die "'$ECLIPSE_HOME/eclipse' is not an executable. Halting."
 
 if ! $(command -v xmlindent >/dev/null); then
-    echo "Cannot find xmllint. Halting."
-    exit 1
+    die "Cannot find xmllint. Halting."
 fi
 
 WORK_DIR=$HOME/CT4E_release_work
@@ -192,7 +191,8 @@ $ECLIPSE_HOME/eclipse \
     -metadataRepository file:$LOCAL_REPO \
     -productFile $WORK_DIR/metadata.product \
     -flavor tooling \
-    -append
+    -append \
+    -compress
 set +x
 
 # Validate license and copyright
@@ -212,8 +212,7 @@ valid=$(unzip -p $LOCAL_REPO/gcp-repo/target/repository/content.jar \
         and normalize-space(${categoryXPathExpr}/licenses[@size=1]/license[@uri='$licenseUri'])='$licenseText' \
         and ${categoryXPathExpr}/requires[@size='1']/required/@name='$featureId'" -)
 if [ "$valid" != "true" ]; then
-    echo "$featureId is missing the copyright and license metadata. Halting."
-    exit 1
+    die "$featureId is missing the copyright and license metadata. Halting."
 fi
 
 ###############################################################################
@@ -233,7 +232,7 @@ read VERSION
 ask_proceed
 
 set -x
-gsutil cp $LOCAL_REPO/artifacts.xml $LOCAL_REPO/content.xml \
+gsutil cp $LOCAL_REPO/artifacts.jar $LOCAL_REPO/content.jar \
     gs://cloud-tools-for-eclipse/$VERSION/ && \
 gsutil -m cp -R $LOCAL_REPO/features $LOCAL_REPO/plugins \
     gs://cloud-tools-for-eclipse/$VERSION/
