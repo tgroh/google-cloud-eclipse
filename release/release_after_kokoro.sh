@@ -180,7 +180,7 @@ echo "#"
 echo "# Run org.eclipse.equinox.p2.publisher.ProductPublisher to add any"
 echo "# additional p2 metadata for the CT4E repository:
 echo "#   - copyright and license have been associated with our public feature
-echo "# Verify using xmlstarlet."
+echo "# Verify using xmllint."
 echo "#"
 ask_proceed
 
@@ -220,8 +220,8 @@ echo
 echo "#"
 echo "# Upload the following newly created files"
 echo "#"
-echo "#     $LOCAL_REPO/artifacts.xml"
-echo "#     $LOCAL_REPO/content.xml"
+echo "#     $LOCAL_REPO/artifacts.jar"
+echo "#     $LOCAL_REPO/content.jar"
 echo "#     $LOCAL_REPO/features/*"
 echo "#     $LOCAL_REPO/plugins/*"
 echo "#"
