@@ -37,6 +37,7 @@ Import-Package: com.google.common.annotations,
  com.google.common.base,
  com.google.common.collect,
  com.google.cloud.tools.eclipse.appengine.facets,
+ com.google.cloud.tools.eclipse.appengine.libraries,
  com.google.cloud.tools.eclipse.appengine.libraries.model,
  com.google.cloud.tools.eclipse.appengine.libraries.repository,
  com.google.cloud.tools.eclipse.jst.server.core,
@@ -55,5 +56,3 @@ Import-Package: com.google.common.annotations,
  org.eclipse.jdt.core,
  org.eclipse.jdt.debug.ui.launchConfigurations,
  org.eclipse.swt
- 
- 
