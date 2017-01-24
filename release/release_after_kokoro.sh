@@ -178,8 +178,8 @@ fi
 echo
 echo "#"
 echo "# Run org.eclipse.equinox.p2.publisher.ProductPublisher to add any"
-echo "# additional p2 metadata for the CT4E repository:
-echo "#   - copyright and license have been associated with our public feature
+echo "# additional p2 metadata for the CT4E repository:"
+echo "#   - copyright and license have been associated with our public feature"
 echo "# Verify using xmllint."
 echo "#"
 ask_proceed
