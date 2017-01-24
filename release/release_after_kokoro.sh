@@ -206,7 +206,7 @@ licenseText="Cloud Tools for Eclipse is made available under the Apache\
  https://www.apache.org/licenses/LICENSE-2.0"
 categoryXPathExpr="/repository[@name='$repoName']/units/unit[@id='$categoryId']"
 
-valid=$(unzip -p $LOCAL_REPO/gcp-repo/target/repository/content.jar \
+valid=$(unzip -p $LOCAL_REPO/content.jar \
   | xmllint --xpath \
     "normalize-space(${categoryXPathExpr}/copyright)='$copyrightText' \
         and normalize-space(${categoryXPathExpr}/licenses[@size=1]/license[@uri='$licenseUri'])='$licenseText' \
