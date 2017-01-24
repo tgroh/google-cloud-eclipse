@@ -87,6 +87,10 @@
     <!-- log surefire tests to stdout -->
     <tycho.showEclipseLog>true</tycho.showEclipseLog>
 
+    <!-- place all jacoco files in one place; this is relative to the
+      bundles and tests -->
+    <jacoco.reportPath>../../target/jacoco.exec</jacoco.reportPath>
+
     <!--
       `SYSTEM` means use the default JDK (necessary for Travis).
       `BREE` means find a configured JDK using Maven Toolchains matching
@@ -471,13 +475,13 @@
                 <goals>
                   <goal>prepare-agent</goal>
                 </goals>
-              </execution>
-              <execution>
-                <id>report</id>
-                <phase>verify</phase>
-                <goals>
-                  <goal>report</goal>
-                </goals>
+                <configuration>
+                  <destFile>${jacoco.reportPath}</destFile>
+                  <includes>
+                    <include>com.google.cloud.tools.eclipse.*</include>
+                  </includes>
+                  <append>true</append>
+                </configuration>
               </execution>
             </executions>
           </plugin>
