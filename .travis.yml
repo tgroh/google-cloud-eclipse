@@ -25,8 +25,8 @@ matrix:
   - jdk: oraclejdk8
     env: ECLIPSE_TARGET=neon
   - jdk: oraclejdk8
-    env: ECLIPSE_TARGET=oxygen
-script: mvn -Ptravis --fail-at-end verify jacoco:report ${ECLIPSE_TARGET:+-Declipse.target=${ECLIPSE_TARGET}}
+    env: ECLIPSE_TARGET=oxygen MAVEN_FLAGS=-Pjacoco
+script: mvn -Ptravis --fail-at-end verify ${ECLIPSE_TARGET:+-Declipse.target=${ECLIPSE_TARGET}} ${MAVEN_FLAGS}
 addons:
   apt:
     packages:
