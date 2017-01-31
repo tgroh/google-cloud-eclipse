@@ -91,4 +91,13 @@
            class="com.google.cloud.tools.eclipse.util.service.ServiceContextFactory:com.google.cloud.tools.eclipse.appengine.libraries.LibraryClasspathContainerInitializer"
            id="com.google.cloud.tools.eclipse.appengine.libraries" />
   </extension>
+  
+  <extension point="org.eclipse.jdt.ui.classpathFixProcessors">
+    <classpathFixProcessor
+        name="App Engine API"
+        class="com.google.cloud.tools.eclipse.appengine.libraries.AppEngineClasspathFixProcessor"
+        id="com.google.cloud.tools.eclipse.appengine.libraries.AppEngineClasspathFixProcessor">
+        <overrides id="org.eclipse.jdt.ui.text.correction.DefaultClasspathFixProcessor" />
+    </classpathFixProcessor>
+  </extension>
 </plugin>

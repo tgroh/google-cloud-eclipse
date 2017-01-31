@@ -9,7 +9,8 @@ Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Bundle-ActivationPolicy: lazy
 Service-Component: OSGI-INF/com.google.cloud.tools.eclipse.appengine.libraries.repository.M2RepositoryService.xml,
  OSGI-INF/com.google.cloud.tools.eclipse.appengine.libraries.repository.LibraryClasspathContainerResolverService.xml
-Require-Bundle: org.eclipse.equinox.common,
+Require-Bundle: org.eclipse.ltk.core.refactoring,
+ org.eclipse.equinox.common,
  org.eclipse.m2e.maven.runtime,
  org.eclipse.m2e.core
 Export-Package: com.google.cloud.tools.eclipse.appengine.libraries,
@@ -28,9 +29,12 @@ Import-Package: com.google.cloud.tools.eclipse.util,
  org.eclipse.core.runtime.jobs,
  org.eclipse.e4.core.di.annotations,
  org.eclipse.jdt.core,
+ org.eclipse.jdt.ui.text.java,
+ org.eclipse.jface.viewers.deferred,
  org.eclipse.jst.j2ee.classpathdep,
  org.eclipse.m2e.core,
  org.eclipse.m2e.core.repository,
  org.eclipse.osgi.util,
+ org.eclipse.swt.graphics,
  org.osgi.framework;version="1.8.0",
  org.osgi.service.component.annotations;resolution:=optional

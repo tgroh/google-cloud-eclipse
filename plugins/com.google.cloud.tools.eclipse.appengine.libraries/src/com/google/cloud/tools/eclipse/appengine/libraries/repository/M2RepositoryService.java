@@ -40,7 +40,7 @@ import org.osgi.service.component.annotations.Component;
  * variable.
  * <p>
  * In case <code>libraryfile.getSourceUri()</code> is null, M2Eclipse is used to resolve the source
- * artifact by using the "sources" classifier with the binary artifact's {@link MavenCoordinates}.;
+ * artifact by using the "sources" classifier with the binary artifact's {@link MavenCoordinates}.
  */
 @Component
 public class M2RepositoryService implements ILibraryRepositoryService {
