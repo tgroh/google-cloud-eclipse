@@ -54,6 +54,7 @@ import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
@@ -72,6 +73,7 @@ public class StandardDeployPreferencesPanel extends DeployPreferencesPanel {
 
   private AccountSelector accountSelector;
 
+  private ProjectSelector projectSelector;
   private Label projectIdLabel;
   private Text projectId;
 
@@ -293,6 +295,19 @@ public class StandardDeployPreferencesPanel extends DeployPreferencesPanel {
     projectId.setToolTipText(Messages.getString("tooltip.project.id"));
     GridData projectIdTextGridData = new GridData(SWT.FILL, SWT.CENTER, true, false);
     projectId.setLayoutData(projectIdTextGridData);
+
+    Label label = new Label(this, SWT.LEAD);
+    label.setText(Messages.getString("project.id"));
+    label.setToolTipText(Messages.getString("tooltip.project.id"));
+    Combo combo = new Combo(this, SWT.DROP_DOWN);
+    combo.setItems(new String[]{"Create new project", "My project 1", "My project 2"});
+    combo.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+
+    label = new Label(this, SWT.LEAD);
+    label.setText(Messages.getString("project.id"));
+    label.setToolTipText(Messages.getString("tooltip.project.id"));
+    projectSelector = new ProjectSelector(this);
+    projectSelector.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
   }
 
   private void createProjectVersionSection() {
