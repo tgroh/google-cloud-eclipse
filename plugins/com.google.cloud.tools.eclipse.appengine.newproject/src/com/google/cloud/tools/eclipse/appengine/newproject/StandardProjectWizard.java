@@ -44,7 +44,7 @@ import org.eclipse.ui.statushandlers.StatusManager;
 
 public class StandardProjectWizard extends Wizard implements INewWizard {
 
-  private AppEngineStandardWizardPage page = null;
+  private AppEngineWizardPage page = null;
   private AppEngineStandardProjectConfig config = new AppEngineStandardProjectConfig();
   private IWorkbench workbench;
 
@@ -59,7 +59,7 @@ public class StandardProjectWizard extends Wizard implements INewWizard {
       CloudSdk sdk = new CloudSdk.Builder().build();
       sdk.validateCloudSdk();
       sdk.validateAppEngineJavaComponents();
-      page = new AppEngineStandardWizardPage();
+      page = new AppEngineWizardPage();
       addPage(page);
     } catch (CloudSdkNotFoundException ex) {
       addPage(new CloudSdkMissingPage(AnalyticsEvents.APP_ENGINE_NEW_PROJECT_WIZARD_TYPE_NATIVE));
