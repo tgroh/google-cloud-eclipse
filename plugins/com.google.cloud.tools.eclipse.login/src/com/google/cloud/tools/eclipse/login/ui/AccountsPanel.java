@@ -20,7 +20,8 @@ import com.google.cloud.tools.eclipse.login.IGoogleLoginService;
 import com.google.cloud.tools.eclipse.login.Messages;
 import com.google.cloud.tools.ide.login.Account;
 import com.google.common.annotations.VisibleForTesting;
-
+import java.util.ArrayList;
+import java.util.List;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.dialogs.PopupDialog;
 import org.eclipse.jface.layout.GridDataFactory;
@@ -29,14 +30,12 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * A panel listing all currently logged-in accounts. The panel allows adding new accounts and
@@ -83,9 +82,17 @@ public class AccountsPanel extends PopupDialog {
   @VisibleForTesting
   void createAccountsPane(Composite container) {
     for (Account account : loginService.getAccounts()) {
-      Label label = new Label(container, SWT.NONE);
-      label.setText(account.getEmail());
-      accountLabels.add(label);
+      Label name = new Label(container, SWT.LEAD);
+      if (account.getName() != null) {
+        name.setText(account.getName());
+      }
+
+      Label email = new Label(container, SWT.LEAD);
+      email.setText(account.getEmail());  // email is never null.
+      accountLabels.add(email);
+
+      Label separator = new Label(container, SWT.HORIZONTAL | SWT.SEPARATOR);
+      separator.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
     }
   }
 
