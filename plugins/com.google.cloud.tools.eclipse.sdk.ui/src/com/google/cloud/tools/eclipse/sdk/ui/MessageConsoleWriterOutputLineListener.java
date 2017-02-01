@@ -22,6 +22,7 @@ import com.google.cloud.tools.appengine.cloudsdk.process.ProcessOutputLineListen
 
 public class MessageConsoleWriterOutputLineListener implements ProcessOutputLineListener {
   private MessageConsoleStream stream;
+  private StringBuilder outputStringBuilder = new StringBuilder();
 
   public MessageConsoleWriterOutputLineListener(MessageConsoleStream stream) {
     this.stream = stream;
@@ -33,5 +34,10 @@ public class MessageConsoleWriterOutputLineListener implements ProcessOutputLine
       // there's still a small chance that the stream will be closed and the error will be logged by the ConsolePlugin
       stream.println(line);
     }
+    outputStringBuilder.append(line);
+  }
+
+  public String getOutput() {
+    return outputStringBuilder.toString();
   }
 }
