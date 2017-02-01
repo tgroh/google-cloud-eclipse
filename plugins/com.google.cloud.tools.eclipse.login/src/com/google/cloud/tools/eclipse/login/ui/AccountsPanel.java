@@ -43,10 +43,11 @@ import org.eclipse.swt.widgets.Shell;
  */
 public class AccountsPanel extends PopupDialog {
 
-  private IGoogleLoginService loginService;
+  private final IGoogleLoginService loginService;
 
   @VisibleForTesting Button logOutButton;
-  @VisibleForTesting List<Label> accountLabels = new ArrayList<>();
+  @VisibleForTesting final List<Label> nameLabels = new ArrayList<>();
+  @VisibleForTesting final List<Label> emailLabels = new ArrayList<>();
 
   public AccountsPanel(Shell parent, IGoogleLoginService loginService) {
     super(parent, SWT.MODELESS,
@@ -86,10 +87,11 @@ public class AccountsPanel extends PopupDialog {
       if (account.getName() != null) {
         name.setText(account.getName());
       }
+      nameLabels.add(name);
 
       Label email = new Label(container, SWT.LEAD);
       email.setText(account.getEmail());  // email is never null.
-      accountLabels.add(email);
+      emailLabels.add(email);
 
       Label separator = new Label(container, SWT.HORIZONTAL | SWT.SEPARATOR);
       separator.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));

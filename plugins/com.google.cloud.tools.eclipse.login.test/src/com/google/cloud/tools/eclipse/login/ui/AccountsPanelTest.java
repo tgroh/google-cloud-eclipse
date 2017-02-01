@@ -20,12 +20,17 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.mockito.Mockito.when;
 
 import com.google.cloud.tools.eclipse.login.IGoogleLoginService;
 import com.google.cloud.tools.eclipse.test.util.ui.ShellTestResource;
 import com.google.cloud.tools.ide.login.Account;
-
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.junit.Before;
 import org.junit.Rule;
@@ -33,11 +38,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
 
 @RunWith(MockitoJUnitRunner.class)
 public class AccountsPanelTest {
@@ -53,9 +53,12 @@ public class AccountsPanelTest {
   @Before
   public void setUp() {
     shell = shellTestResource.getShell();
-    when(account1.getEmail()).thenReturn("some-email-1@example.com");
-    when(account2.getEmail()).thenReturn("some-email-2@example.com");
-    when(account3.getEmail()).thenReturn("some-email-3@example.com");
+    when(account1.getEmail()).thenReturn("alice@example.com");
+    when(account2.getEmail()).thenReturn("bob@example.com");
+    when(account3.getEmail()).thenReturn("charlie@example.com");
+    when(account1.getName()).thenReturn("Alice");
+    when(account2.getName()).thenReturn(null);
+    when(account3.getName()).thenReturn("Charlie");
   }
 
   @Test
@@ -85,7 +88,7 @@ public class AccountsPanelTest {
     AccountsPanel panel = new AccountsPanel(null, loginService);
     panel.createDialogArea(shell);
 
-    assertTrue(panel.accountLabels.isEmpty());
+    assertTrue(panel.emailLabels.isEmpty());
   }
 
   @Test
@@ -95,8 +98,21 @@ public class AccountsPanelTest {
     AccountsPanel panel = new AccountsPanel(null, loginService);
     panel.createDialogArea(shell);
 
-    assertEquals(1, panel.accountLabels.size());
-    panel.accountLabels.get(0).getText().contains(account2.getEmail());
+    assertEquals(1, panel.emailLabels.size());
+    assertEquals("alice@example.com", panel.emailLabels.get(0).getText());
+    assertEquals("Alice", panel.nameLabels.get(0).getText());
+  }
+
+  @Test
+  public void testAccountsArea_accountWithNullName() {
+    setUpLoginService(Arrays.asList(account2));
+
+    AccountsPanel panel = new AccountsPanel(null, loginService);
+    panel.createDialogArea(shell);
+
+    assertEquals(1, panel.emailLabels.size());
+    assertEquals("bob@example.com", panel.emailLabels.get(0).getText());
+    assertTrue(panel.nameLabels.get(0).getText().isEmpty());
   }
 
   @Test
@@ -106,13 +122,22 @@ public class AccountsPanelTest {
     AccountsPanel panel = new AccountsPanel(null, loginService);
     panel.createDialogArea(shell);
 
-    assertEquals(3, panel.accountLabels.size());
-    String text1 = panel.accountLabels.get(0).getText();
-    String text2 = panel.accountLabels.get(1).getText();
-    String text3 = panel.accountLabels.get(2).getText();
-    assertTrue((text1 + text2 + text3).contains(account1.getEmail()));
-    assertTrue((text1 + text2 + text3).contains(account2.getEmail()));
-    assertTrue((text1 + text2 + text3).contains(account3.getEmail()));
+    assertEquals(3, panel.emailLabels.size());
+    verifyLabelsContains(panel.emailLabels, "alice@example.com");
+    verifyLabelsContains(panel.emailLabels, "bob@example.com");
+    verifyLabelsContains(panel.emailLabels, "charlie@example.com");
+    verifyLabelsContains(panel.nameLabels, "Alice");
+    verifyLabelsContains(panel.nameLabels, "");
+    verifyLabelsContains(panel.nameLabels, "Charlie");
+  }
+
+  private void verifyLabelsContains(List<Label> labels, String text) {
+    for (Label label : labels) {
+      if (label.getText().equals(text)) {
+        return;
+      }
+    }
+    fail();
   }
 
   private void setUpLoginService(List<Account> accounts) {
