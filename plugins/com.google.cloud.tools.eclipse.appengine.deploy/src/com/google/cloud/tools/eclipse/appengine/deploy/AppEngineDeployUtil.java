@@ -20,8 +20,9 @@ public class AppEngineDeployUtil {
   public static DeployOutput parseDeployOutput(String jsonOutput) throws JsonParseException {
     Type deployOutputType = new TypeToken<DeployOutput>() {}.getType();
     DeployOutput deployOutput = new Gson().fromJson(jsonOutput, deployOutputType);
-    if (deployOutput == null) {
-      throw new JsonParseException("Cannot parse deploy output: unexpected gcloud JSON output format");
+    if (deployOutput == null
+        || deployOutput.versions == null || deployOutput.versions.size() != 1) {
+      throw new JsonParseException("Cannot get app version: unexpected gcloud JSON output format");
     }
     return deployOutput;
   }
