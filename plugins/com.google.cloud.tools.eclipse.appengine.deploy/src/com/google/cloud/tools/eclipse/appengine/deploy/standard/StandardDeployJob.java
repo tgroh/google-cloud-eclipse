@@ -279,10 +279,6 @@ public class StandardDeployJob extends WorkspaceJob {
   private String getDeployedAppVersion() {
     String rawDeployOutput = stdoutLineListener.getOutput().substring(stagingOutputEndIndex);
     DeployOutput deployOutput = AppEngineDeployUtil.parseDeployOutput(rawDeployOutput);
-    if (deployOutput == null || deployOutput.getVersion() == null) {
-      throw new JsonParseException("Cannot get app version: unexpected gcloud JSON output format");
-    }
-
     return deployOutput.getVersion();
   }
 
