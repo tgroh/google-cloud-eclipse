@@ -22,6 +22,8 @@ import com.google.cloud.tools.appengine.cloudsdk.CloudSdk;
 import com.google.cloud.tools.appengine.cloudsdk.process.ProcessExitListener;
 import com.google.cloud.tools.appengine.cloudsdk.process.ProcessOutputLineListener;
 import com.google.cloud.tools.appengine.cloudsdk.process.ProcessStartListener;
+import com.google.cloud.tools.eclipse.appengine.deploy.AppEngineDeployUtil;
+import com.google.cloud.tools.eclipse.appengine.deploy.AppEngineDeployUtil.DeployOutput;
 import com.google.cloud.tools.eclipse.appengine.deploy.AppEngineProjectDeployer;
 import com.google.cloud.tools.eclipse.appengine.deploy.Messages;
 import com.google.cloud.tools.eclipse.login.CredentialHelper;
@@ -172,20 +174,6 @@ public class StandardDeployJob extends WorkspaceJob {
     super.canceling();
   }
 
-  @VisibleForTesting
-  public static DeployOutput parseDeployJsonOutput(String jsonOutput) throws JsonParseException {
-    Type deployOutputType = new TypeToken<DeployOutput>() {
-      private static final long serialVersionUID = 1L;
-    }.getType();
-
-    DeployOutput deployOutput = new Gson().fromJson(jsonOutput, deployOutputType);
-    if (deployOutput == null
-        || deployOutput.versions == null || deployOutput.versions.size() != 1) {
-      throw new JsonParseException("Cannot get app version: unexpected gcloud JSON output format");
-    }
-    return deployOutput;
-  }
-
   private IStatus saveCredential(Path destination, Credential credential) {
     String jsonCredential = new CredentialHelper().toJson(credential);
     try {
@@ -295,7 +283,11 @@ public class StandardDeployJob extends WorkspaceJob {
 
   private String getDeployedAppVersion() {
     String rawDeployOutput = stdoutLineListener.getOutput().substring(stagingOutputEndIndex);
-    DeployOutput deployOutput = parseDeployJsonOutput(rawDeployOutput);
+    DeployOutput deployOutput = AppEngineDeployUtil.parseDeployOutput(rawDeployOutput);
+    if (deployOutput == null || deployOutput.getVersion() == null) {
+      throw new JsonParseException("Cannot get app version: unexpected gcloud JSON output format");
+    }
+
     return deployOutput.getVersion();
   }
 
@@ -354,33 +346,6 @@ public class StandardDeployJob extends WorkspaceJob {
      */
     public IStatus getExitStatus() {
       return status;
-    }
-  }
-
-  /*
-   * Holds de-serialized JSON output of gcloud app deploy. Don't change the field names
-   * because Gson uses it for automatic de-serialization.
-   */
-  static class DeployOutput {
-    private static class Version {
-      String id;
-      String service;
-    }
-
-    List<Version> versions;
-
-    public String getVersion() {
-      if (versions == null || versions.size() != 1) {
-        return null;
-      }
-      return versions.get(0).id;
-    }
-
-    public String getService() {
-      if (versions == null || versions.size() != 1) {
-        return null;
-      }
-      return versions.get(0).service;
     }
   }
 
