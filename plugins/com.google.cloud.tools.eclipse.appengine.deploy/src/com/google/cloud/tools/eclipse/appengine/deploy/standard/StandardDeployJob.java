@@ -31,14 +31,10 @@ import com.google.cloud.tools.eclipse.sdk.CollectingLineListener;
 import com.google.cloud.tools.eclipse.sdk.ui.MessageConsoleWriterOutputLineListener;
 import com.google.cloud.tools.eclipse.util.CloudToolsInfo;
 import com.google.cloud.tools.eclipse.util.status.StatusUtil;
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Joiner;
 import com.google.common.base.Predicate;
-import com.google.common.reflect.TypeToken;
-import com.google.gson.Gson;
 import com.google.gson.JsonParseException;
 import java.io.IOException;
-import java.lang.reflect.Type;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -77,7 +73,6 @@ import org.eclipse.ui.progress.UIJob;
  * It uses a work directory where it will create separate directories for the exploded WAR and the
  * staging results.
  */
-// TODO: add tests
 public class StandardDeployJob extends WorkspaceJob {
 
   private static final String STAGING_DIRECTORY_NAME = "staging";
@@ -195,7 +190,7 @@ public class StandardDeployJob extends WorkspaceJob {
       new StandardProjectStaging().stage(explodedWarDirectory, stagingDirectory, cloudSdk, progress.newChild(60));
       return stagingExitListener.getExitStatus();
     } catch (CoreException | IllegalArgumentException | OperationCanceledException ex) {
-      return StatusUtil.error(getClass(), "Error staging project " + project.getName() + "; " + ex.getMessage());
+      return StatusUtil.error(getClass(), Messages.getString("deploy.job.staging.failed"), ex);
     } finally {
       getJobManager().endRule(project);
     }
@@ -234,7 +229,7 @@ public class StandardDeployJob extends WorkspaceJob {
         String version =  getDeployedAppVersion();
         appLocation = "http://" + version + "-dot-" + project+ ".appspot.com/";
       } catch (IndexOutOfBoundsException | JsonParseException ex)  {
-        return StatusUtil.error(getClass(), "Error launching deployed app in browser", ex);
+        return StatusUtil.error(getClass(), Messages.getString("brower.launch.failed"), ex);
       }
     }
 
@@ -255,7 +250,7 @@ public class StandardDeployJob extends WorkspaceJob {
           logger.log(Level.WARNING, "Cannot launch a browser", ex);
           Program.launch(finalAppLocation);
         } catch (MalformedURLException ex) {
-          return StatusUtil.error(getClass(), "Invalid URL", ex);
+          return StatusUtil.error(getClass(), Messages.getString("invalid.url"), ex);
         }
         return Status.OK_STATUS;
       }
@@ -272,7 +267,7 @@ public class StandardDeployJob extends WorkspaceJob {
   private String getErrorMessageOrDefault(String defaultMessage) {
     // TODO: Check the assumption that if there are error messages during staging collected via
     // the errorCollectingLineListener, the staging process will have a non-zero exitcode,
-    // so it is ok to use the same errorCollectingLineListener for the deploy process
+    // making it ok to use the same errorCollectingLineListener for the deploy process
     List<String> messages = errorCollectingLineListener.getCollectedMessages();
     if (!messages.isEmpty()) {
       return Joiner.on('\n').join(messages);
