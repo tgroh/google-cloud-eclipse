@@ -22,8 +22,7 @@ import com.google.cloud.tools.appengine.cloudsdk.CloudSdk;
 import com.google.cloud.tools.appengine.cloudsdk.process.ProcessExitListener;
 import com.google.cloud.tools.appengine.cloudsdk.process.ProcessOutputLineListener;
 import com.google.cloud.tools.appengine.cloudsdk.process.ProcessStartListener;
-import com.google.cloud.tools.eclipse.appengine.deploy.AppEngineDeployUtil;
-import com.google.cloud.tools.eclipse.appengine.deploy.AppEngineDeployUtil.DeployOutput;
+import com.google.cloud.tools.eclipse.appengine.deploy.AppEngineDeployOutput;
 import com.google.cloud.tools.eclipse.appengine.deploy.AppEngineProjectDeployer;
 import com.google.cloud.tools.eclipse.appengine.deploy.Messages;
 import com.google.cloud.tools.eclipse.login.CredentialHelper;
@@ -121,30 +120,29 @@ public class StandardDeployJob extends WorkspaceJob {
   @Override
   public IStatus runInWorkspace(IProgressMonitor monitor) throws CoreException {
     SubMonitor progress = SubMonitor.convert(monitor, 100);
-    stagingOutputEndIndex = 0;
-    IStatus status;
     Path credentialFile = null;
 
     try {
+      stagingOutputEndIndex = 0;
       IPath workDirectory = workDirectoryParent;
       IPath explodedWarDirectory = workDirectory.append(EXPLODED_WAR_DIRECTORY_NAME);
       IPath stagingDirectory = workDirectory.append(STAGING_DIRECTORY_NAME);
       credentialFile = workDirectory.append(CREDENTIAL_FILENAME).toFile().toPath();
 
-      status = saveCredential(credentialFile, credential);
-      if (status != Status.OK_STATUS) {
-        return status;
+      IStatus saveStatus = saveCredential(credentialFile, credential);
+      if (saveStatus != Status.OK_STATUS) {
+        return saveStatus;
       }
 
-      status =
+      IStatus stagingStatus =
           stageProject(credentialFile, explodedWarDirectory, stagingDirectory, progress.newChild(30));
-      if (status != Status.OK_STATUS) {
-        return status;
+      if (stagingStatus != Status.OK_STATUS) {
+        return stagingStatus;
       }
 
-      status = deployProject(credentialFile, stagingDirectory, progress.newChild(70));
-      if (status != Status.OK_STATUS) {
-        return status;
+      IStatus deployStatus = deployProject(credentialFile, stagingDirectory, progress.newChild(70));
+      if (deployStatus != Status.OK_STATUS) {
+        return deployStatus;
       }
 
       return openAppInBrowser();
@@ -223,11 +221,11 @@ public class StandardDeployJob extends WorkspaceJob {
     final String project = deployConfiguration.getProject();
     String appLocation = null;
     if (deployConfiguration.getPromote()) {
-      appLocation = "http://" + project + ".appspot.com";
+      appLocation = "https://" + project + ".appspot.com";
     } else {
       try {
         String version =  getDeployedAppVersion();
-        appLocation = "http://" + version + "-dot-" + project+ ".appspot.com/";
+        appLocation = "https://" + version + "-dot-" + project+ ".appspot.com/";
       } catch (IndexOutOfBoundsException | JsonParseException ex)  {
         return StatusUtil.error(getClass(), Messages.getString("brower.launch.failed"), ex);
       }
@@ -278,7 +276,7 @@ public class StandardDeployJob extends WorkspaceJob {
 
   private String getDeployedAppVersion() {
     String rawDeployOutput = stdoutLineListener.getOutput().substring(stagingOutputEndIndex);
-    DeployOutput deployOutput = AppEngineDeployUtil.parseDeployOutput(rawDeployOutput);
+    AppEngineDeployOutput deployOutput = AppEngineDeployOutput.parseDeployOutput(rawDeployOutput);
     return deployOutput.getVersion();
   }
 
@@ -308,7 +306,7 @@ public class StandardDeployJob extends WorkspaceJob {
     }
 
     /**
-     * @return the status on exit of the process or null is the process has not exited.
+     * @return the status on exit if the process or null is the process has not exited.
      */
     public IStatus getExitStatus() {
       return status;
@@ -333,7 +331,7 @@ public class StandardDeployJob extends WorkspaceJob {
     }
 
     /**
-     * @return the status on exit of the process or null is the process has not exited.
+     * @return the status on exit if the process or null is the process has not exited.
      */
     public IStatus getExitStatus() {
       return status;
