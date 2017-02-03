@@ -45,6 +45,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.MultiStatus;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.debug.core.DebugException;
@@ -111,39 +112,43 @@ public class LocalAppEngineServerLaunchConfigurationDelegate
    * @throws CoreException if a conflict is found; the message is reportable
    */
   private static void checkConflict(IServer server1, IServer server2) throws CoreException {
-    compareServerAttribute("server port", LocalAppEngineServerBehaviour.SERVER_PORT_ATTRIBUTE_NAME,
-        LocalAppEngineServerBehaviour.DEFAULT_SERVER_PORT, server1, server2);
-    compareServerAttribute("admin port", LocalAppEngineServerBehaviour.ADMIN_PORT_ATTRIBUTE_NAME,
-        LocalAppEngineServerBehaviour.DEFAULT_ADMIN_PORT, server1, server2);
+    MultiStatus status = new MultiStatus("fixme", 0,
+        MessageFormat.format("Conflicts with \"{0}\"", server2.getName()), null);
+    status.add(compareServerAttribute("server port: {0,number,#}",
+        LocalAppEngineServerBehaviour.SERVER_PORT_ATTRIBUTE_NAME,
+        LocalAppEngineServerBehaviour.DEFAULT_SERVER_PORT, server1, server2));
+    status.add(compareServerAttribute("admin port: {0,number,#}",
+        LocalAppEngineServerBehaviour.ADMIN_PORT_ATTRIBUTE_NAME,
+        LocalAppEngineServerBehaviour.DEFAULT_ADMIN_PORT, server1, server2));
 
     // Check the general storage path: other storages fall under here
     // XXX: does it matter if storage_path is same if all other paths are explicitly specified
     // (e.g., the {blob,data,*search*,logs} paths)
-    compareServerAttribute("storage location", "appEngineDevStorage", "COMMON-PATH", server1,
-        server2);
-  }
+    status.add(compareServerAttribute("storage location: {0}", "appEngineDevStorage", "default",
+        server1, server2));
 
-
-  private static void compareServerAttribute(String description, String attributeName,
-      int defaultValue, IServer server1, IServer server2) throws CoreException {
-    int value1 = server1.getAttribute(attributeName, defaultValue);
-    int value2 = server2.getAttribute(attributeName, defaultValue);
-    if (value1 == value2) {
-      throw new CoreException(
-          StatusUtil.error(LocalAppEngineServerLaunchConfigurationDelegate.class,
-              MessageFormat.format("conflict: {0}: {1}", description, value1)));
+    if (!status.isOK()) {
+      throw new CoreException(status);
     }
   }
 
-  private static void compareServerAttribute(String description, String attributeName,
+
+  private static IStatus compareServerAttribute(String format, String attributeName,
+      int defaultValue, IServer server1, IServer server2) {
+    int value1 = server1.getAttribute(attributeName, defaultValue);
+    int value2 = server2.getAttribute(attributeName, defaultValue);
+    return value1 != value2 ? Status.OK_STATUS :
+          StatusUtil.error(LocalAppEngineServerLaunchConfigurationDelegate.class,
+            MessageFormat.format(format, value1));
+  }
+
+  private static IStatus compareServerAttribute(String format, String attributeName,
       String defaultValue, IServer server1, IServer server2) throws CoreException {
     String value1 = server1.getAttribute(attributeName, defaultValue);
     String value2 = server2.getAttribute(attributeName, defaultValue);
-    if (Objects.equals(value1, value2)) {
-      throw new CoreException(
-          StatusUtil.error(LocalAppEngineServerLaunchConfigurationDelegate.class,
-              MessageFormat.format("conflict: {0}: {1}", description, value1)));
-    }
+    return !Objects.equals(value1, value2) ? Status.OK_STATUS
+        : StatusUtil.error(LocalAppEngineServerLaunchConfigurationDelegate.class,
+            MessageFormat.format(format, value1));
   }
 
 
