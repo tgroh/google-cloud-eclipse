@@ -293,6 +293,18 @@ public class StandardDeployPreferencesPanel extends DeployPreferencesPanel {
     projectId.setToolTipText(Messages.getString("tooltip.project.id"));
     GridData projectIdTextGridData = new GridData(SWT.FILL, SWT.CENTER, true, false);
     projectId.setLayoutData(projectIdTextGridData);
+    
+    Label label = new Label(this, SWT.LEAD);
+    label.setText(Messages.getString("project.id"));
+    label.setToolTipText(Messages.getString("tooltip.project.id"));
+    ProjectSelector projectSelector = new ProjectSelector(this);
+    projectSelector.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+    
+    label = new Label(this, SWT.LEAD);
+    label.setText(Messages.getString("project.id"));
+    label.setToolTipText(Messages.getString("tooltip.project.id"));
+    ProjectSelector2 projectSelector2 = new ProjectSelector2(this);
+    projectSelector2.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
   }
 
   private void createProjectVersionSection() {
