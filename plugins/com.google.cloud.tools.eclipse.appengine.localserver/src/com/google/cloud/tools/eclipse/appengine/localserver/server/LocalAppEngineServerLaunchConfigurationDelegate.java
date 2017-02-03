@@ -27,15 +27,18 @@ import com.google.cloud.tools.eclipse.ui.util.MessageConsoleUtilities;
 import com.google.cloud.tools.eclipse.ui.util.WorkbenchUtil;
 import com.google.cloud.tools.eclipse.usagetracker.AnalyticsEvents;
 import com.google.cloud.tools.eclipse.usagetracker.AnalyticsPingManager;
+import com.google.cloud.tools.eclipse.util.status.StatusUtil;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import java.io.File;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.eclipse.core.runtime.CoreException;
@@ -88,6 +91,61 @@ public class LocalAppEngineServerLaunchConfigurationDelegate
       throw new CoreException(status);
     }
   }
+
+  @Override
+  public ILaunch getLaunch(ILaunchConfiguration configuration, String mode) throws CoreException {
+    IServer server1 = ServerUtil.getServer(configuration);
+    for (ILaunch launch : getLaunchManager().getLaunches()) {
+      if (!launch.isTerminated()
+          && launch.getLaunchConfiguration().getType() == configuration.getType()) {
+        IServer server2 = ServerUtil.getServer(launch.getLaunchConfiguration());
+        checkConflict(server1, server2);
+      }
+    }
+    return super.getLaunch(configuration, mode);
+  }
+
+  /**
+   * Check for known conflicting settings.
+   * 
+   * @throws CoreException if a conflict is found; the message is reportable
+   */
+  private static void checkConflict(IServer server1, IServer server2) throws CoreException {
+    compareServerAttribute("server port", LocalAppEngineServerBehaviour.SERVER_PORT_ATTRIBUTE_NAME,
+        LocalAppEngineServerBehaviour.DEFAULT_SERVER_PORT, server1, server2);
+    compareServerAttribute("admin port", LocalAppEngineServerBehaviour.ADMIN_PORT_ATTRIBUTE_NAME,
+        LocalAppEngineServerBehaviour.DEFAULT_ADMIN_PORT, server1, server2);
+
+    // Check the general storage path: other storages fall under here
+    // XXX: does it matter if storage_path is same if all other paths are explicitly specified
+    // (e.g., the {blob,data,*search*,logs} paths)
+    compareServerAttribute("storage location", "appEngineDevStorage", "COMMON-PATH", server1,
+        server2);
+  }
+
+
+  private static void compareServerAttribute(String description, String attributeName,
+      int defaultValue, IServer server1, IServer server2) throws CoreException {
+    int value1 = server1.getAttribute(attributeName, defaultValue);
+    int value2 = server2.getAttribute(attributeName, defaultValue);
+    if (value1 == value2) {
+      throw new CoreException(
+          StatusUtil.error(LocalAppEngineServerLaunchConfigurationDelegate.class,
+              MessageFormat.format("conflict: {0}: {1}", description, value1)));
+    }
+  }
+
+  private static void compareServerAttribute(String description, String attributeName,
+      String defaultValue, IServer server1, IServer server2) throws CoreException {
+    String value1 = server1.getAttribute(attributeName, defaultValue);
+    String value2 = server2.getAttribute(attributeName, defaultValue);
+    if (Objects.equals(value1, value2)) {
+      throw new CoreException(
+          StatusUtil.error(LocalAppEngineServerLaunchConfigurationDelegate.class,
+              MessageFormat.format("conflict: {0}: {1}", description, value1)));
+    }
+  }
+
 
   @Override
   public void launch(ILaunchConfiguration configuration, String mode, final ILaunch launch,
