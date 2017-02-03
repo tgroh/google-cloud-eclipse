@@ -112,8 +112,10 @@ public class LocalAppEngineServerLaunchConfigurationDelegate
    * @throws CoreException if a conflict is found; the message is reportable
    */
   private static void checkConflict(IServer server1, IServer server2) throws CoreException {
-    MultiStatus status = new MultiStatus("fixme", 0,
-        MessageFormat.format("Conflicts with \"{0}\"", server2.getName()), null);
+    MultiStatus status = new MultiStatus(Activator.PLUGIN_ID, 0,
+        MessageFormat.format("Conflicts with running server \"{0}\"", server2.getName()),
+        null);
+    // use {0,number,#} to avoid localized port numbers
     status.add(compareServerAttribute("server port: {0,number,#}",
         LocalAppEngineServerBehaviour.SERVER_PORT_ATTRIBUTE_NAME,
         LocalAppEngineServerBehaviour.DEFAULT_SERVER_PORT, server1, server2));
@@ -128,7 +130,7 @@ public class LocalAppEngineServerLaunchConfigurationDelegate
         server1, server2));
 
     if (!status.isOK()) {
-      throw new CoreException(status);
+      throw new CoreException(StatusUtil.filter(status));
     }
   }
 
