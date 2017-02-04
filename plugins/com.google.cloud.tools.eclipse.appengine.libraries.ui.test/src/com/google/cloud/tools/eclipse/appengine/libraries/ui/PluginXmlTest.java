@@ -18,6 +18,6 @@ package com.google.cloud.tools.eclipse.appengine.libraries.ui;
 
 import com.google.cloud.tools.eclipse.test.util.BasePluginXmlTest;
 
-public class PluginXmlValidationTest extends BasePluginXmlTest {
+public class PluginXmlTest extends BasePluginXmlTest {
 
 }
