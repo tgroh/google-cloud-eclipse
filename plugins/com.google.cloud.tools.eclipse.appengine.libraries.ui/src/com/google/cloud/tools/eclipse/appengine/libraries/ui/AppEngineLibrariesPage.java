@@ -20,7 +20,6 @@ import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.ui.wizards.IClasspathContainerPage;
 import org.eclipse.jdt.ui.wizards.IClasspathContainerPageExtension;
-import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridLayout;
@@ -45,7 +44,6 @@ public class AppEngineLibrariesPage extends WizardPage
     composite.setLayout(new GridLayout(2, false));
 
     AppEngineLibrariesSelectorGroup group = new AppEngineLibrariesSelectorGroup(composite);
-
     setControl(composite);
   }
 
