@@ -32,7 +32,7 @@ public class AppEngineLibrariesPage extends WizardPage
     implements IClasspathContainerPage, IClasspathContainerPageExtension {
 
   public AppEngineLibrariesPage() {
-    super("App Engine Libraries Page");
+    super("App Engine Libraries Page"); //$NON-NLS-1$
     setTitle("App Engine Standard Environment Libraries");
     setDescription("Additional jars commonly used in App Engine Standard Environment applications");
     setImageDescriptor(AppEngineImages.appEngine(64));
