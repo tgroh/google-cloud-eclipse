@@ -27,7 +27,6 @@ import com.google.cloud.tools.eclipse.appengine.deploy.AppEngineProjectDeployer;
 import com.google.cloud.tools.eclipse.appengine.deploy.Messages;
 import com.google.cloud.tools.eclipse.login.CredentialHelper;
 import com.google.cloud.tools.eclipse.sdk.CollectingLineListener;
-import com.google.cloud.tools.eclipse.sdk.ui.MessageConsoleWriterOutputLineListener;
 import com.google.cloud.tools.eclipse.util.CloudToolsInfo;
 import com.google.cloud.tools.eclipse.util.status.StatusUtil;
 import com.google.common.base.Joiner;
@@ -88,25 +87,27 @@ public class StandardDeployJob extends WorkspaceJob {
   private IProject project;
   private Credential credential;
   protected IPath workDirectoryParent;
-  private MessageConsoleWriterOutputLineListener stdoutLineListener;
+  private ProcessOutputLineListener stagingStdoutLineListener;
+  private ProcessOutputLineListener deployStdoutLineListener;
   private ProcessOutputLineListener stderrLineListener;
   private DefaultDeployConfiguration deployConfiguration;
   private CollectingLineListener errorCollectingLineListener;
-  private int stagingOutputEndIndex = 0;
 
   public StandardDeployJob(IProject project,
                            Credential credential,
                            IPath workDirectoryParent,
-                           MessageConsoleWriterOutputLineListener stdoutLineListener,
+                           ProcessOutputLineListener stagingStdoutLineListener,
                            ProcessOutputLineListener stderrLineListener,
                            DefaultDeployConfiguration deployConfiguration) {
     super(Messages.getString("deploy.standard.runnable.name")); //$NON-NLS-1$
     this.project = project;
     this.credential = credential;
     this.workDirectoryParent = workDirectoryParent;
-    this.stdoutLineListener = stdoutLineListener;
+    this.stagingStdoutLineListener = stagingStdoutLineListener;
     this.stderrLineListener = stderrLineListener;
     this.deployConfiguration = deployConfiguration;
+    // TODO: change to StringBuilderProcessOutputLineListener from the appengine-plugins-core
+    this.deployStdoutLineListener =  new StringBuilderProcessOutputLineListener();
     errorCollectingLineListener =
         new CollectingLineListener(new Predicate<String>() {
                                      @Override
@@ -123,7 +124,6 @@ public class StandardDeployJob extends WorkspaceJob {
     Path credentialFile = null;
 
     try {
-      stagingOutputEndIndex = 0;
       IPath workDirectory = workDirectoryParent;
       IPath explodedWarDirectory = workDirectory.append(EXPLODED_WAR_DIRECTORY_NAME);
       IPath stagingDirectory = workDirectory.append(STAGING_DIRECTORY_NAME);
@@ -179,8 +179,8 @@ public class StandardDeployJob extends WorkspaceJob {
 
   private IStatus stageProject(Path credentialFile, IPath explodedWarDirectory, IPath stagingDirectory, IProgressMonitor monitor) {
     SubMonitor progress = SubMonitor.convert(monitor, 100);
-    StagingExitListener stagingExitListener = new StagingExitListener();
-    CloudSdk cloudSdk = getCloudSdk(credentialFile, stagingExitListener);
+    RecordProcessError stagingExitListener = new RecordProcessError();
+    CloudSdk cloudSdk = getCloudSdk(credentialFile, stagingStdoutLineListener, stagingExitListener);
 
     try {
       getJobManager().beginRule(project, progress);
@@ -195,14 +195,14 @@ public class StandardDeployJob extends WorkspaceJob {
   }
 
   private IStatus deployProject(Path credentialFile, IPath stagingDirectory, IProgressMonitor monitor) {
-    DeployExitListener deployExitListener = new DeployExitListener();
-    CloudSdk cloudSdk = getCloudSdk(credentialFile, deployExitListener);
+    RecordProcessError deployExitListener = new RecordProcessError();
+    CloudSdk cloudSdk = getCloudSdk(credentialFile, deployStdoutLineListener, deployExitListener);
     new AppEngineProjectDeployer().deploy(
         stagingDirectory, cloudSdk, deployConfiguration, monitor);
     return deployExitListener.getExitStatus();
   }
 
-  private CloudSdk getCloudSdk(Path credentialFile, ProcessExitListener processExitListener) {
+  private CloudSdk getCloudSdk(Path credentialFile, ProcessOutputLineListener stdoutLineListener, ProcessExitListener processExitListener) {
     CloudSdk cloudSdk = new CloudSdk.Builder()
                           .addStdOutLineListener(stdoutLineListener)
                           .addStdErrLineListener(stderrLineListener)
@@ -275,7 +275,7 @@ public class StandardDeployJob extends WorkspaceJob {
   }
 
   private String getDeployedAppVersion() {
-    String rawDeployOutput = stdoutLineListener.getOutput().substring(stagingOutputEndIndex);
+    String rawDeployOutput = deployStdoutLineListener.toString();
     AppEngineDeployOutput deployOutput = AppEngineDeployOutput.parseDeployOutput(rawDeployOutput);
     return deployOutput.getVersion();
   }
@@ -287,7 +287,7 @@ public class StandardDeployJob extends WorkspaceJob {
     }
   }
 
-  private class StagingExitListener implements ProcessExitListener {
+  private class RecordProcessError implements ProcessExitListener {
     private IStatus status;
 
     @Override
@@ -300,7 +300,6 @@ public class StandardDeployJob extends WorkspaceJob {
             getErrorMessageOrDefault(Messages.getString("cloudsdk.process.failed", exitCode));
         status = StatusUtil.error(this, errorMessage);
       } else {
-        stagingOutputEndIndex = stdoutLineListener.getOutput().length();
         status = Status.OK_STATUS;
       }
     }
@@ -313,28 +312,20 @@ public class StandardDeployJob extends WorkspaceJob {
     }
   }
 
-  private final class DeployExitListener implements ProcessExitListener {
-    private IStatus status;
+  private class StringBuilderProcessOutputLineListener implements ProcessOutputLineListener {
+    private final StringBuffer buffer = new StringBuffer();
 
-    @Override
-    public void onExit(int exitCode) {
-      if (cloudSdkProcessStatus == Status.CANCEL_STATUS) {
-        status = cloudSdkProcessStatus;
-      } else if (exitCode != 0) {
-        // temporary way of error handling, after #439 is fixed, it'll be cleaner
-        String errorMessage =
-            getErrorMessageOrDefault(Messages.getString("cloudsdk.process.failed", exitCode));
-        status = StatusUtil.error(this, errorMessage);
-      } else {
-        status = Status.OK_STATUS;
-      }
+    public StringBuilderProcessOutputLineListener() {
     }
 
-    /**
-     * @return the status on exit if the process or null is the process has not exited.
-     */
-    public IStatus getExitStatus() {
-      return status;
+    @Override
+    public void onOutputLine(String line) {
+      buffer.append(line);
+    }
+
+    @Override
+    public String toString() {
+      return buffer.toString();
     }
   }
 
