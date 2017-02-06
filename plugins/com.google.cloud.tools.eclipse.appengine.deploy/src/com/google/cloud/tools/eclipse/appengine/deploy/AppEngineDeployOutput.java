@@ -27,6 +27,9 @@ import java.util.List;
 // TODO: move into appengine-plugins-core
 // TODO expand to include other Version attributes
 public class AppEngineDeployOutput {
+  private AppEngineDeployOutput() {
+  }
+
   private static class Version {
     String id;
     String service;
@@ -38,9 +41,6 @@ public class AppEngineDeployOutput {
    * @return version, can be null
    */
   public String getVersion() {
-    if (versions == null || versions.size() != 1) {
-      return null;
-    }
     return versions.get(0).id;
   }
 
@@ -48,9 +48,6 @@ public class AppEngineDeployOutput {
    * @return service, can be null
    */
   public String getService() {
-    if (versions == null || versions.size() != 1) {
-      return null;
-    }
     return versions.get(0).service;
   }
 
