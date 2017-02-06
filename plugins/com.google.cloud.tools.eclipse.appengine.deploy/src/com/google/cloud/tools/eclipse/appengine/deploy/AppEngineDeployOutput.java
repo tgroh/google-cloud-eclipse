@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Google Inc.
+ * Copyright 2017 Google Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@ import java.util.List;
 
 /**
  * Holds de-serialized JSON output of gcloud app deploy. Don't change the field names
- * because Gson uses it for automatic de-serialization.
+ * because Gson uses them for automatic de-serialization.
  */
 // TODO: move into appengine-plugins-core
 // TODO expand to include other Version attributes
@@ -60,7 +60,7 @@ public class AppEngineDeployOutput {
    * @return the output of gcloud app deploy
    * @throws JsonParseException if unable to extract the deploy output information needed
    */
-  public static AppEngineDeployOutput parseDeployOutput(String jsonOutput) throws JsonParseException {
+  public static AppEngineDeployOutput parse(String jsonOutput) throws JsonParseException {
     AppEngineDeployOutput deployOutput = new Gson().fromJson(jsonOutput, AppEngineDeployOutput.class);
     if (deployOutput == null
         || deployOutput.versions == null || deployOutput.versions.size() != 1) {

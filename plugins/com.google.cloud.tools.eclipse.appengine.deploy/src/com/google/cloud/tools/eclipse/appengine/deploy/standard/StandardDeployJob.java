@@ -34,8 +34,6 @@ import com.google.common.base.Joiner;
 import com.google.common.base.Predicate;
 import com.google.gson.JsonParseException;
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -51,13 +49,6 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubMonitor;
-import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.swt.program.Program;
-import org.eclipse.ui.IWorkbench;
-import org.eclipse.ui.PartInitException;
-import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.browser.IWorkbenchBrowserSupport;
-import org.eclipse.ui.progress.UIJob;
 
 /**
  * Executes a job that deploys a project to App Engine Standard.
@@ -255,7 +246,7 @@ public class StandardDeployJob extends WorkspaceJob {
 
   private String getDeployedAppVersion() {
     String rawDeployOutput = deployStdoutLineListener.toString();
-    AppEngineDeployOutput deployOutput = AppEngineDeployOutput.parseDeployOutput(rawDeployOutput);
+    AppEngineDeployOutput deployOutput = AppEngineDeployOutput.parse(rawDeployOutput);
     return deployOutput.getVersion();
   }
 

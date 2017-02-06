@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Google Inc.
+ * Copyright 2017 Google Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,9 +42,9 @@ public class AppEngineDeployOutputTest {
             "}\n";
 
     AppEngineDeployOutput deployOutput =
-        AppEngineDeployOutput.parseDeployOutput(jsonOutput);
-    Assert.assertEquals(deployOutput.getVersion(), "20160429t112518");
-    Assert.assertEquals(deployOutput.getService(), "default");
+        AppEngineDeployOutput.parse(jsonOutput);
+    Assert.assertEquals("20160429t112518", deployOutput.getVersion());
+    Assert.assertEquals("default", deployOutput.getService());
   }
 
   @Test
@@ -73,7 +73,7 @@ public class AppEngineDeployOutputTest {
             "}\n";
 
     try {
-      AppEngineDeployOutput.parseDeployOutput(jsonOutput);
+      AppEngineDeployOutput.parse(jsonOutput);
       Assert.fail();
     } catch (JsonParseException e) {
       // Success! Should throw a JsonParseException.
@@ -88,7 +88,7 @@ public class AppEngineDeployOutputTest {
             "}\n";
 
     try {
-      AppEngineDeployOutput.parseDeployOutput(jsonOutput);
+      AppEngineDeployOutput.parse(jsonOutput);
       Assert.fail();
     } catch (JsonParseException e) {
       // Success! Should throw a JsonParseException.

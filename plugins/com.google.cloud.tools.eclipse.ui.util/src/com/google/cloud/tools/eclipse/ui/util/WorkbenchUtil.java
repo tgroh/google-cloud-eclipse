@@ -63,7 +63,7 @@ public class WorkbenchUtil {
    * @param urlPath the URL to display
    * @param browserId if an instance of a browser with the same id is already opened, it will be
    *   returned instead of creating a new one. Passing null will create a new instance with a
-   *   generated id every time
+   *   generated id every time.
    * @param name a name used for the presentation of the internal browser
    * @param tooltip a tooltip used for the presentation of the internal browser
    */
@@ -87,10 +87,10 @@ public class WorkbenchUtil {
    * @param urlPath the URL to display
    * @param browserId if an instance of a browser with the same id is already opened, it will be
    *   returned instead of creating a new one. Passing null will create a new instance with a
-   *   generated id every time
+   *   generated id every time.
    * @param name a name used for the presentation of the internal browser
    * @param tooltip a tooltip used for the presentation of the internal browser
-   * @return
+   * @return resulting status of the operation
    */
   public static IStatus openInBrowser(IWorkbench workbench, String urlPath, String browserId,
       String name, String tooltip) {

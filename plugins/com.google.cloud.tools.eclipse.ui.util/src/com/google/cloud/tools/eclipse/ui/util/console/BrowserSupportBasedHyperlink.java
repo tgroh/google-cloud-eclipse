@@ -17,12 +17,7 @@
 package com.google.cloud.tools.eclipse.ui.util.console;
 
 import com.google.cloud.tools.eclipse.ui.util.WorkbenchUtil;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.eclipse.swt.program.Program;
-import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.browser.IWorkbenchBrowserSupport;
 import org.eclipse.ui.console.IHyperlink;
