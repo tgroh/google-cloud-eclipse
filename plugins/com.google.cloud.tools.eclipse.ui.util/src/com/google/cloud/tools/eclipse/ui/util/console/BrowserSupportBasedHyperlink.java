@@ -16,6 +16,7 @@
 
 package com.google.cloud.tools.eclipse.ui.util.console;
 
+import com.google.cloud.tools.eclipse.ui.util.WorkbenchUtil;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.logging.Level;
@@ -49,23 +50,6 @@ public class BrowserSupportBasedHyperlink implements IHyperlink {
 
   @Override
   public void linkActivated() {
-    try {
-      IWorkbenchBrowserSupport browserSupport = PlatformUI.getWorkbench().getBrowserSupport();
-      int style = IWorkbenchBrowserSupport.LOCATION_BAR | IWorkbenchBrowserSupport.NAVIGATION_BAR
-          | IWorkbenchBrowserSupport.STATUS;
-      String browserId = null;
-      String title = null;
-      String tooltip = null;
-      browserSupport.createBrowser(style, browserId, title, tooltip).openURL(new URL(url));
-
-    } catch (PartInitException partInitException) {
-      logger.log(Level.SEVERE, "Cannot open hyperlink using browser support, will try SWT's Program.launch(String)",
-                 partInitException);
-      if (!Program.launch(url)) {
-        logger.log(Level.SEVERE, "Cannot open hyperlink using SWT's Program.launch(String)");
-      }
-    } catch (MalformedURLException malformedURLException) {
-      logger.log(Level.SEVERE, "Cannot open hyperlink", malformedURLException);
-    }
+    WorkbenchUtil.openInBrowser(PlatformUI.getWorkbench(), url, null, null, null);
   }
 }
