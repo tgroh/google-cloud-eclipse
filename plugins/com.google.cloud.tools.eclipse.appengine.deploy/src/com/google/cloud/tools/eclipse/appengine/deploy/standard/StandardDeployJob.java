@@ -27,6 +27,7 @@ import com.google.cloud.tools.eclipse.appengine.deploy.AppEngineProjectDeployer;
 import com.google.cloud.tools.eclipse.appengine.deploy.Messages;
 import com.google.cloud.tools.eclipse.login.CredentialHelper;
 import com.google.cloud.tools.eclipse.sdk.CollectingLineListener;
+import com.google.cloud.tools.eclipse.ui.util.WorkbenchUtil;
 import com.google.cloud.tools.eclipse.util.CloudToolsInfo;
 import com.google.cloud.tools.eclipse.util.status.StatusUtil;
 import com.google.common.base.Joiner;
@@ -231,30 +232,8 @@ public class StandardDeployJob extends WorkspaceJob {
       }
     }
 
-    final String finalAppLocation = appLocation;
-    final IWorkbench workbench = PlatformUI.getWorkbench();
-    Job launchBrowserJob = new UIJob(workbench.getDisplay(), "Launch deployed app in browser") {
-
-      @Override
-      public IStatus runInUIThread(IProgressMonitor monitor) {
-        try {
-          URL url = new URL(finalAppLocation);
-          IWorkbenchBrowserSupport browserSupport = workbench.getBrowserSupport();
-          int style = IWorkbenchBrowserSupport.LOCATION_BAR
-              | IWorkbenchBrowserSupport.NAVIGATION_BAR | IWorkbenchBrowserSupport.STATUS;
-          browserSupport.createBrowser(style, project, project, project).openURL(url);
-        } catch (PartInitException ex) {
-          // Unable to use the normal browser support, so push to the OS
-          logger.log(Level.WARNING, "Cannot launch a browser", ex);
-          Program.launch(finalAppLocation);
-        } catch (MalformedURLException ex) {
-          return StatusUtil.error(getClass(), Messages.getString("invalid.url"), ex);
-        }
-        return Status.OK_STATUS;
-      }
-
-    };
-    launchBrowserJob.schedule();
+    String browsername = Messages.getString("browser.name", project);
+    WorkbenchUtil.openInBrowserInUiThread(appLocation, null, browsername, browsername);
     return Status.OK_STATUS;
   }
 
