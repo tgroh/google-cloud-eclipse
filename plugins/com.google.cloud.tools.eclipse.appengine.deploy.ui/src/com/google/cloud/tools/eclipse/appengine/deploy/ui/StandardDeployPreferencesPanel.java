@@ -47,15 +47,24 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.jface.databinding.swt.ISWTObservableValue;
 import org.eclipse.jface.databinding.swt.WidgetProperties;
 import org.eclipse.jface.dialogs.Dialog;
+import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.layout.GridLayoutFactory;
+import org.eclipse.jface.window.Window;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Font;
+import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Link;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.forms.events.ExpansionAdapter;
 import org.eclipse.ui.forms.events.ExpansionEvent;
@@ -128,7 +137,7 @@ public class StandardDeployPreferencesPanel extends DeployPreferencesPanel {
     bindingContext = new DataBindingContext();
 
     setupAccountEmailDataBinding(bindingContext);
-    setupProjectIdDataBinding(bindingContext);
+//    setupProjectIdDataBinding(bindingContext);
     setupProjectVersionDataBinding(bindingContext);
     setupAutoPromoteDataBinding(bindingContext);
     setupBucketDataBinding(bindingContext);
@@ -285,26 +294,83 @@ public class StandardDeployPreferencesPanel extends DeployPreferencesPanel {
   }
 
   private void createProjectIdSection() {
-    projectIdLabel = new Label(this, SWT.LEAD);
-    projectIdLabel.setText(Messages.getString("project.id"));
-    projectIdLabel.setToolTipText(Messages.getString("tooltip.project.id"));
-    
-    projectId = new Text(this, SWT.LEAD | SWT.SINGLE | SWT.BORDER);
-    projectId.setToolTipText(Messages.getString("tooltip.project.id"));
-    GridData projectIdTextGridData = new GridData(SWT.FILL, SWT.CENTER, true, false);
-    projectId.setLayoutData(projectIdTextGridData);
+//    projectIdLabel = new Label(this, SWT.LEAD);
+//    projectIdLabel.setText(Messages.getString("project.id"));
+//    projectIdLabel.setToolTipText(Messages.getString("tooltip.project.id"));
+//    
+//    projectId = new Text(this, SWT.LEAD | SWT.SINGLE | SWT.BORDER);
+//    projectId.setToolTipText(Messages.getString("tooltip.project.id"));
+//    GridData projectIdTextGridData = new GridData(SWT.FILL, SWT.CENTER, true, false);
+//    projectId.setLayoutData(projectIdTextGridData);
     
     Label label = new Label(this, SWT.LEAD);
     label.setText(Messages.getString("project.id"));
     label.setToolTipText(Messages.getString("tooltip.project.id"));
-    ProjectSelector projectSelector = new ProjectSelector(this);
-    projectSelector.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+    GridDataFactory.swtDefaults().align(SWT.BEGINNING, SWT.BEGINNING).applyTo(label);
+    ProjectSelector2 projectSelector = new ProjectSelector2(this);
+    GridData gridData = new GridData(SWT.FILL, SWT.CENTER, true, false);
+    gridData.heightHint = 100;
+    projectSelector.setLayoutData(gridData);
     
-    label = new Label(this, SWT.LEAD);
-    label.setText(Messages.getString("project.id"));
-    label.setToolTipText(Messages.getString("tooltip.project.id"));
-    ProjectSelector2 projectSelector2 = new ProjectSelector2(this);
-    projectSelector2.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+    Label lab = new Label(this, SWT.LEAD);
+    Link link = new Link(this, SWT.LEAD);
+    Font font = link.getFont();
+    FontData fontData = font.getFontData()[0];
+    fontData.setStyle(SWT.ITALIC);
+    link.setFont(new Font(getDisplay(), fontData));
+    link.setText("The selected project does not have an App Engine application.<a>Click here</a> to create one.");
+    link.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+    link.addSelectionListener(new SelectionListener() {
+      
+      @Override
+      public void widgetSelected(SelectionEvent e) {
+        new Dialog(StandardDeployPreferencesPanel.this.getShell()) {
+
+          @Override
+          protected Control createDialogArea(Composite parent) {
+            Composite dialogArea = (Composite) super.createDialogArea(parent);
+            getShell().setText("Create new GCP project");
+            dialogArea.setLayout(new GridLayout(2, false));
+            
+            Label projectNameLabel = new Label(dialogArea, SWT.LEAD);
+            projectNameLabel.setText("Project name:");
+            Text projectName = new Text(dialogArea, SWT.LEAD | SWT.SINGLE | SWT.BORDER);
+            GridDataFactory.fillDefaults().grab(true, false).applyTo(projectName);
+            
+            Label label = new Label(dialogArea, SWT.LEAD);
+            label.setText("App Engine Location:");
+            Combo combo = new Combo(dialogArea, SWT.DROP_DOWN | SWT.READ_ONLY);
+            combo.setItems(new String[]{ "us-east", "us-west", "eu-west" });
+            GridDataFactory.fillDefaults().grab(true, false).applyTo(combo);
+            
+            Link billing = new Link(dialogArea, SWT.NONE);
+            billing.setText("You need to enable billing for this project.\nFor App Engine Standrad projects there is a free tier.\nTo learn more about the details <a>click here</a>");
+            billing.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
+            Button check = new Button(dialogArea, SWT.CHECK);
+            check.setText("Enable billing");
+            check.setLayoutData(new GridData(SWT.LEAD, SWT.CENTER, false, false, 2, 1));
+            return dialogArea;
+          }
+
+          @Override
+          protected Control createButtonBar(Composite parent) {
+            Control buttonBar = super.createButtonBar(parent);
+            getButton(IDialogConstants.OK_ID).setEnabled(false);
+            return buttonBar;
+          }
+          
+          
+          
+        }.open();
+        
+      }
+      
+      @Override
+      public void widgetDefaultSelected(SelectionEvent e) {
+        // TODO Auto-generated method stub
+        
+      }
+    });
   }
 
   private void createProjectVersionSection() {
@@ -422,10 +488,11 @@ public class StandardDeployPreferencesPanel extends DeployPreferencesPanel {
 
     @Override
     protected IStatus validate() {
-      if (Boolean.FALSE.equals(selectionObservable.getValue())) {
-        return ValidationStatus.ok();
-      }
-      return validator.validate(textObservable.getValue());
+      return ValidationStatus.error("The selected project does not have an App Engine application.");
+//      if (Boolean.FALSE.equals(selectionObservable.getValue())) {
+//        return ValidationStatus.ok();
+//      }
+//      return validator.validate(textObservable.getValue());
     }
   }
 

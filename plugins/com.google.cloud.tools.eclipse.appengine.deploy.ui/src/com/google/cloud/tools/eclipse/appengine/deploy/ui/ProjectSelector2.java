@@ -16,76 +16,68 @@
 
 package com.google.cloud.tools.eclipse.appengine.deploy.ui;
 
-import com.google.common.base.Strings;
+import com.google.cloud.tools.eclipse.appengine.ui.AppEngineImages;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
+import org.eclipse.jface.resource.ImageRegistry;
+import org.eclipse.jface.viewers.CellLabelProvider;
 import org.eclipse.jface.viewers.ComboViewer;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
+import org.eclipse.jface.viewers.TableViewer;
+import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.jface.viewers.Viewer;
-import org.eclipse.jface.viewers.ViewerFilter;
+import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.ModifyEvent;
-import org.eclipse.swt.events.ModifyListener;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Table;
+import org.eclipse.swt.widgets.TableColumn;
+import org.eclipse.swt.widgets.TableItem;
+import org.eclipse.ui.ISharedImages;
+import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.internal.SharedImages;
 
 public class ProjectSelector2 {
 
-  private Combo combo;
-  private ComboViewer comboViewer;
 
   List<String> proposals = Arrays.asList("My Project",
                                          "Hello App Engine",
-                                         "This is some other project");
-  
-  private String filterString = "";
-  private boolean handleEvent = false;
+                                         "This is some other project",
+                                         "Yet another hello world",
+                                         "Test Project",
+                                         "FooBarBaz",
+                                         "Cloud Tools For Eclipse testing");
+  private Table table;
+
   /**
    * @param standardDeployPreferencesPanel
    */
   public ProjectSelector2(Composite parent) {
-    comboViewer = new ComboViewer(parent, SWT.DROP_DOWN);
-    combo = comboViewer.getCombo();
-    
-    comboViewer.setContentProvider(new IStructuredContentProvider() {
-      @Override
-      public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
+    table = new Table(parent, SWT.MULTI | SWT.BORDER);
+    table.setHeaderVisible(true);
+    TableColumn icons = new TableColumn(table, SWT.LEFT);
+    icons.setText("Project name");
+    icons.setWidth(200);
+    TableColumn names = new TableColumn(table, SWT.LEFT);
+    names.setText("Project ID");
+    names.setWidth(200);
+
+    TableItem newProj = new TableItem(table, SWT.NONE);
+    newProj.setImage(PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_OBJ_ADD));
+    newProj.setText(0, "Create new project");
+    for (int i = 0; i < 20; ++i) {
+      for (String projectName : proposals) {
+        TableItem tableItem = new TableItem(table, SWT.NONE);
+        tableItem.setImage(0, AppEngineImages.googleCloudPlatform(16).createImage());
+        tableItem.setText(0, projectName);
+        tableItem.setText(1, projectName.toLowerCase().replace(' ', '-'));
       }
-      
-      @Override
-      public void dispose() {
-      }
-      
-      @Override
-      public Object[] getElements(Object inputElement) {
-        return proposals.toArray(new String[0]);
-      }
-    });
-    comboViewer.setInput(combo); // could be something else, doesn't matter for now
-    comboViewer.addFilter(new ViewerFilter() {
-      
-      @Override
-      public boolean select(Viewer viewer, Object parentElement, Object element) {
-        return Strings.isNullOrEmpty(filterString) || ((String) element).contains(filterString);
-      }
-    });
-    combo.addModifyListener(new ModifyListener() {
-      
-      @Override
-      public void modifyText(ModifyEvent e) {
-        System.out.println("Combo text changed to: " + combo.getText());
-        handleEvent = !handleEvent;
-        if (handleEvent) {
-          filterString = combo.getText();
-          comboViewer.refresh();
-          handleEvent = !handleEvent; // flip again, so that the setText on the following line won't be handled in this if block
-          combo.setText(filterString);
-        }
-      }
-    });
+    }
   }
-  
+
   public void setLayoutData(Object layoutData) {
-    combo.setLayoutData(layoutData);
+    table.setLayoutData(layoutData);
   }
 }
