@@ -122,7 +122,7 @@
       <!-- bundle: com.google.cloud.tools.appengine -->
       <groupId>com.google.cloud.tools</groupId>
       <artifactId>appengine-plugins-core</artifactId>
-      <version>0.2.5</version>
+      <version>0.2.6</version>
     </dependency>
     <dependency>
       <!-- bundle: com.google.guava -->
@@ -413,7 +413,7 @@
       </activation>
       <properties>
          <jettyMinVersion>9.3</jettyMinVersion>
-         <jettyMaxVersion>9.4</jettyMaxVersion>
+         <jettyMaxVersion>9.5</jettyMaxVersion>
       </properties>
       <!-- build against a known target platform -->
       <modules>
