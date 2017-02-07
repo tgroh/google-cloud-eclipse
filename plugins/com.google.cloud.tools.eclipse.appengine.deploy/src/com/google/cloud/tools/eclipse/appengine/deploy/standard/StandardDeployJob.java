@@ -219,12 +219,12 @@ public class StandardDeployJob extends WorkspaceJob {
         String version =  getDeployedAppVersion();
         appLocation = "https://" + version + "-dot-" + project+ ".appspot.com/";
       } catch (IndexOutOfBoundsException | JsonParseException ex)  {
-        return StatusUtil.error(getClass(), Messages.getString("brower.launch.failed"), ex);
+        return StatusUtil.error(getClass(), Messages.getString("browser.launch.failed"), ex);
       }
     }
 
-    String browsername = Messages.getString("browser.name", project);
-    WorkbenchUtil.openInBrowserInUiThread(appLocation, null, browsername, browsername);
+    String browserTitle = Messages.getString("browser.launch.title", project);
+    WorkbenchUtil.openInBrowserInUiThread(appLocation, null, browserTitle, browserTitle);
     return Status.OK_STATUS;
   }
 
