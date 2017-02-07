@@ -100,58 +100,6 @@ class CreateAppEngineStandardWtpProject extends WorkspaceModifyOperation {
     addJunit4ToClasspath(subMonitor.newChild(2), newProject);
   }
 
-<<<<<<< HEAD
-  private static void addAppEngineLibrariesToBuildPath(IProject newProject,
-                                                List<Library> libraries,
-                                                IProgressMonitor monitor) throws CoreException {
-    if (libraries.isEmpty()) {
-      return;
-    }
-    SubMonitor subMonitor = SubMonitor.convert(monitor,
-        Messages.getString("adding.app.engine.libraries"), libraries.size()); //$NON-NLS-1$
-    IJavaProject javaProject = JavaCore.create(newProject);
-    IClasspathEntry[] rawClasspath = javaProject.getRawClasspath();
-    IClasspathEntry[] newRawClasspath =
-        Arrays.copyOf(rawClasspath, rawClasspath.length + libraries.size());
-    for (int i = 0; i < libraries.size(); i++) {
-      Library library = libraries.get(i);
-      IClasspathAttribute[] classpathAttributes;
-      if (library.isExport()) {
-        classpathAttributes = new IClasspathAttribute[] {
-            UpdateClasspathAttributeUtil.createDependencyAttribute(true /* isWebApp */)};
-      } else {
-        classpathAttributes =
-            new IClasspathAttribute[] {UpdateClasspathAttributeUtil.createNonDependencyAttribute()};
-      }
-
-      IClasspathEntry libraryContainer = JavaCore.newContainerEntry(library.getContainerPath(),
-                                                                    new IAccessRule[0],
-                                                                    classpathAttributes,
-                                                                    false);
-      newRawClasspath[rawClasspath.length + i] = libraryContainer;
-      subMonitor.worked(1);
-    }
-    javaProject.setRawClasspath(newRawClasspath, monitor);
-
-    runContainerResolverJob(javaProject);
-  }
-
-  private static void runContainerResolverJob(IJavaProject javaProject) {
-    IEclipseContext context = EclipseContextFactory.getServiceContext(
-        FrameworkUtil.getBundle(CreateAppEngineStandardWtpProject.class).getBundleContext());
-    final IEclipseContext childContext =
-        context.createChild(LibraryClasspathContainerResolverJob.class.getName());
-    childContext.set(IJavaProject.class, javaProject);
-    Job job = ContextInjectionFactory.make(LibraryClasspathContainerResolverJob.class, childContext);
-    job.addJobChangeListener(new JobChangeAdapter() {
-      @Override
-      public void done(IJobChangeEvent event) {
-        childContext.dispose();
-      }
-    });
-    job.schedule();
-  }
-
   private static void addJunit4ToClasspath(IProgressMonitor monitor, IProject newProject)
       throws CoreException {
     IJavaProject javaProject = JavaCore.create(newProject);
