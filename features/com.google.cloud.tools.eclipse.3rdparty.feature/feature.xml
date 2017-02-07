@@ -18,8 +18,17 @@
       %license.text
    </license>
 
+   <!-- appengine-plugins-core -->
    <plugin
          id="com.google.cloud.tools.appengine"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <!-- plugins-login-common -->
+   <plugin
+         id="com.google.cloud.tools.login.plugins-login-common"
          download-size="0"
          install-size="0"
          version="0.0.0"
@@ -59,12 +68,12 @@
          install-size="0"
          version="6.1.26"
          unpack="false"/>
-         
+
    <plugin
          id="org.freemarker.freemarker"
          download-size="0"
          install-size="0"
          version="2.3.25.stable-incubating"
-         unpack="false"/>       
+         unpack="false"/>
 
 </feature>

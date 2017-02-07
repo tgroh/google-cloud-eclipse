@@ -178,4 +178,12 @@
          version="0.0.0"
          unpack="false"/>
 
+   <!-- plugins-login-common -->
+   <plugin
+         id="com.google.cloud.tools.login.plugins-login-common"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
 </feature>
