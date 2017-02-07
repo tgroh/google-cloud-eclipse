@@ -74,7 +74,7 @@ public class AppEngineDeployOutputTest {
 
     try {
       AppEngineDeployOutput.parse(jsonOutput);
-      Assert.fail();
+      Assert.fail("Failure to throw exception when parsing deploy output with more that one version entry");
     } catch (JsonParseException e) {
       // Success! Should throw a JsonParseException.
     }
@@ -89,7 +89,7 @@ public class AppEngineDeployOutputTest {
 
     try {
       AppEngineDeployOutput.parse(jsonOutput);
-      Assert.fail();
+      Assert.fail("Failure to throw exception when parsing deploy output in old format");
     } catch (JsonParseException e) {
       // Success! Should throw a JsonParseException.
     }

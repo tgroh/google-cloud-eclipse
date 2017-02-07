@@ -58,12 +58,12 @@ public class WorkbenchUtil {
   }
   
   /**
-   * Opens the specified url on a Web browser instance in a UI thread.
+   * Opens the specified url in a Web browser instance in a UI thread.
    *
    * @param urlPath the URL to display
    * @param browserId if an instance of a browser with the same id is already opened, it will be
    *   returned instead of creating a new one. Passing null will create a new instance with a
-   *   generated id every time.
+   *   generated id.
    * @param name a name used for the presentation of the internal browser
    * @param tooltip a tooltip used for the presentation of the internal browser
    */
@@ -81,13 +81,13 @@ public class WorkbenchUtil {
   }
 
   /**
-   * Opens the specified url on a Web browser instance.
+   * Opens the specified url in a Web browser instance.
    *
    * @param workbench the current workbench
    * @param urlPath the URL to display
    * @param browserId if an instance of a browser with the same id is already opened, it will be
    *   returned instead of creating a new one. Passing null will create a new instance with a
-   *   generated id every time.
+   *   generated id.
    * @param name a name used for the presentation of the internal browser
    * @param tooltip a tooltip used for the presentation of the internal browser
    * @return resulting status of the operation
