@@ -22,6 +22,7 @@ import org.eclipse.jdt.ui.wizards.IClasspathContainerPage;
 import org.eclipse.jdt.ui.wizards.IClasspathContainerPageExtension;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 
@@ -40,10 +41,11 @@ public class AppEngineLibrariesPage extends WizardPage
 
   @Override
   public void createControl(Composite parent) {
-    Composite composite = new Composite(parent, SWT.NONE);
-    composite.setLayout(new GridLayout(2, false));
-
+    Composite composite = new Composite(parent, SWT.BORDER);
+    composite.setLayout(new GridLayout(2, true));
+    
     AppEngineLibrariesSelectorGroup group = new AppEngineLibrariesSelectorGroup(composite);
+    
     setControl(composite);
   }
 
