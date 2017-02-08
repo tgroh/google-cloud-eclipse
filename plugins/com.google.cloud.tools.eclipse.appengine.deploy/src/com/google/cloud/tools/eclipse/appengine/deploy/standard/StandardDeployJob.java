@@ -230,7 +230,7 @@ public class StandardDeployJob extends WorkspaceJob {
   }
 
   /**
-   * @return the error message obtained from <code>config.getErrorMessageProvider()</code> or
+   * @return the error message obtained from <code>errorCollectingLineListener()</code> or
    * <code>defaultMessage</code>
    */
   private String getErrorMessageOrDefault(String defaultMessage) {
@@ -280,7 +280,7 @@ public class StandardDeployJob extends WorkspaceJob {
     }
 
     /**
-     * @return the status on exit if the process or null is the process has not exited.
+     * @return the status on exit of the process or null if the process has not exited.
      */
     public IStatus getExitStatus() {
       return status;

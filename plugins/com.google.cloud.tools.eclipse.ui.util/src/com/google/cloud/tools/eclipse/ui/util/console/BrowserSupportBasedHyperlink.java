@@ -45,6 +45,6 @@ public class BrowserSupportBasedHyperlink implements IHyperlink {
 
   @Override
   public void linkActivated() {
-    WorkbenchUtil.openInBrowser(PlatformUI.getWorkbench(), url, null, null, null);
+    WorkbenchUtil.openInBrowser(PlatformUI.getWorkbench(), url);
   }
 }

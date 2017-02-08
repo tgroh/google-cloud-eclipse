@@ -75,8 +75,7 @@ public class AnalyticsOptInArea extends PreferenceArea {
       @Override
       public void widgetSelected(SelectionEvent event) {
         // Open a privacy policy web page when the link is clicked.
-        WorkbenchUtil.openInBrowser(PlatformUI.getWorkbench(), Messages.getString("GOOGLE_PRIVACY_POLICY_URL"),
-            null, null, null);
+        WorkbenchUtil.openInBrowser(PlatformUI.getWorkbench(), Messages.getString("GOOGLE_PRIVACY_POLICY_URL"));
       }
     });
     

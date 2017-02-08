@@ -109,4 +109,15 @@ public class WorkbenchUtil {
     }
     return Status.OK_STATUS;
   }
+
+  /**
+   * Opens the specified url in a Web browser instance.
+   *
+   * @param workbench the current workbench
+   * @param urlPath the URL to display
+   * @return resulting status of the operation
+   */
+  public static IStatus openInBrowser(IWorkbench workbench, String urlPath) {
+    return openInBrowser(workbench, urlPath, null, null, null);
+  }
 }

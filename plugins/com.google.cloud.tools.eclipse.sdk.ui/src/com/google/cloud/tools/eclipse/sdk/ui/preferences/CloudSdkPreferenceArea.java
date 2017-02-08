@@ -131,7 +131,7 @@ public class CloudSdkPreferenceArea extends PreferenceArea {
   }
 
   protected void openUrl(String urlText) {
-    WorkbenchUtil.openInBrowser(PlatformUI.getWorkbench(), urlText, null, null, null);
+    WorkbenchUtil.openInBrowser(PlatformUI.getWorkbench(), urlText);
   }
 
   private static Path getDefaultSdkLocation() {
