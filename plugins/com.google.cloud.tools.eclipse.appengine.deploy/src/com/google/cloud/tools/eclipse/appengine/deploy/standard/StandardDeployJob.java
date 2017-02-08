@@ -25,6 +25,7 @@ import com.google.cloud.tools.appengine.cloudsdk.process.ProcessStartListener;
 import com.google.cloud.tools.eclipse.appengine.deploy.AppEngineDeployOutput;
 import com.google.cloud.tools.eclipse.appengine.deploy.AppEngineProjectDeployer;
 import com.google.cloud.tools.eclipse.appengine.deploy.Messages;
+import com.google.cloud.tools.eclipse.appengine.deploy.VersionNotFoundException;
 import com.google.cloud.tools.eclipse.login.CredentialHelper;
 import com.google.cloud.tools.eclipse.sdk.CollectingLineListener;
 import com.google.cloud.tools.eclipse.ui.util.WorkbenchUtil;
@@ -218,7 +219,7 @@ public class StandardDeployJob extends WorkspaceJob {
       try {
         String version =  getDeployedAppVersion();
         appLocation = "https://" + version + "-dot-" + project+ ".appspot.com/";
-      } catch (IndexOutOfBoundsException | JsonParseException ex)  {
+      } catch (VersionNotFoundException ex) {
         return StatusUtil.error(getClass(), Messages.getString("browser.launch.failed"), ex);
       }
     }
@@ -244,10 +245,14 @@ public class StandardDeployJob extends WorkspaceJob {
     }
   }
 
-  private String getDeployedAppVersion() {
-    String rawDeployOutput = deployStdoutLineListener.toString();
-    AppEngineDeployOutput deployOutput = AppEngineDeployOutput.parse(rawDeployOutput);
-    return deployOutput.getVersion();
+  private String getDeployedAppVersion() throws VersionNotFoundException {
+    try {
+      String rawDeployOutput = deployStdoutLineListener.toString();
+      AppEngineDeployOutput deployOutput = AppEngineDeployOutput.parse(rawDeployOutput);
+      return deployOutput.getVersion();
+    } catch (IndexOutOfBoundsException | JsonParseException ex)  {
+      throw new VersionNotFoundException("Error getting deployed app version", ex);
+    }
   }
 
   private final class StoreProcessObjectListener implements ProcessStartListener {
