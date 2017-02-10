@@ -16,8 +16,10 @@
 
 package com.google.cloud.tools.eclipse.appengine.deploy;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.gson.Gson;
 import com.google.gson.JsonParseException;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -27,7 +29,13 @@ import java.util.List;
 // TODO: move into appengine-plugins-core
 // TODO expand to include other Version attributes
 public class AppEngineDeployOutput {
-  private AppEngineDeployOutput() {
+  @VisibleForTesting
+  AppEngineDeployOutput(String id, String service) {
+    Version version = new Version();
+    version.id = id;
+    version.service = service;
+    versions = new ArrayList<Version>();
+    versions.add(version);
   }
 
   private static class Version {
