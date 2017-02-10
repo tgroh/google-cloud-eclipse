@@ -41,6 +41,7 @@ import org.eclipse.jst.j2ee.web.project.facet.IWebFacetInstallDataModelPropertie
 import org.eclipse.jst.j2ee.web.project.facet.WebFacetInstallDataModelProvider;
 import org.eclipse.jst.j2ee.web.project.facet.WebFacetUtils;
 import org.eclipse.jst.server.core.FacetUtil;
+import org.eclipse.wst.common.componentcore.internal.builder.IDependencyGraph;
 import org.eclipse.wst.common.frameworks.datamodel.DataModelFactory;
 import org.eclipse.wst.common.frameworks.datamodel.IDataModel;
 import org.eclipse.wst.common.project.facet.core.IFacetedProject;
@@ -147,7 +148,18 @@ public class AppEngineStandardFacet {
       Object config = null;
       facetInstallSet.add(new IFacetedProject.Action(
           IFacetedProject.Action.Type.INSTALL, appEngineFacetVersion, config));
-      facetedProject.modify(facetInstallSet, subMonitor.newChild(100));
+
+      // Workaround deadlock bug described in Eclipse bug (https://bugs.eclipse.org/511793).
+      // There are graph update jobs triggered by the completion of the CreateProjectOperation
+      // above (from resource notifications) and from other resource changes from modifying the
+      // project facets. So we force the dependency graph to defer updates.
+      try {
+        IDependencyGraph.INSTANCE.preUpdate();
+
+        facetedProject.modify(facetInstallSet, subMonitor.newChild(100));
+      } finally {
+        IDependencyGraph.INSTANCE.postUpdate();
+      }
     }
   }
 
@@ -171,22 +183,32 @@ public class AppEngineStandardFacet {
       }
     }
 
-    org.eclipse.wst.server.core.IRuntime[] appEngineRuntimes = getAppEngineRuntimes();
-    if (appEngineRuntimes.length > 0) {
-      IRuntime appEngineFacetRuntime = null;
-      for (org.eclipse.wst.server.core.IRuntime appEngineRuntime : appEngineRuntimes) {
-        appEngineFacetRuntime = FacetUtil.getRuntime(appEngineRuntime);
-        project.addTargetedRuntime(appEngineFacetRuntime, monitor);
-      }
-      project.setPrimaryRuntime(appEngineFacetRuntime, monitor);
-    } else { // Create a new App Engine runtime
-      IRuntime appEngineFacetRuntime = createAppEngineFacetRuntime(monitor);
-      if (appEngineFacetRuntime == null) {
-        throw new NullPointerException("Could not locate App Engine facet runtime");
-      }
+    // Workaround deadlock bug described in Eclipse bug (https://bugs.eclipse.org/511793).
+    // There are graph update jobs triggered by the completion of the CreateProjectOperation
+    // above (from resource notifications) and from other resource changes from modifying the
+    // project facets. So we force the dependency graph to defer updates.
+    try {
+      IDependencyGraph.INSTANCE.preUpdate();
 
-      project.addTargetedRuntime(appEngineFacetRuntime, monitor);
-      project.setPrimaryRuntime(appEngineFacetRuntime, monitor);
+      org.eclipse.wst.server.core.IRuntime[] appEngineRuntimes = getAppEngineRuntimes();
+      if (appEngineRuntimes.length > 0) {
+        IRuntime appEngineFacetRuntime = null;
+        for (org.eclipse.wst.server.core.IRuntime appEngineRuntime : appEngineRuntimes) {
+          appEngineFacetRuntime = FacetUtil.getRuntime(appEngineRuntime);
+          project.addTargetedRuntime(appEngineFacetRuntime, monitor);
+        }
+        project.setPrimaryRuntime(appEngineFacetRuntime, monitor);
+      } else { // Create a new App Engine runtime
+        IRuntime appEngineFacetRuntime = createAppEngineFacetRuntime(monitor);
+        if (appEngineFacetRuntime == null) {
+          throw new NullPointerException("Could not locate App Engine facet runtime");
+        }
+
+        project.addTargetedRuntime(appEngineFacetRuntime, monitor);
+        project.setPrimaryRuntime(appEngineFacetRuntime, monitor);
+      }
+    } finally {
+      IDependencyGraph.INSTANCE.postUpdate();
     }
   }
 
