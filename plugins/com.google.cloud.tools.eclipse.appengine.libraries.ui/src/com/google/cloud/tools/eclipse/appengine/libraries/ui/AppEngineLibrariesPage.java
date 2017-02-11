@@ -16,8 +16,7 @@
 
 package com.google.cloud.tools.eclipse.appengine.libraries.ui;
 
-import java.util.Collection;
-
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.ui.wizards.IClasspathContainerPage;
@@ -27,14 +26,15 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 
+import com.google.cloud.tools.eclipse.appengine.libraries.BuildPath;
 import com.google.cloud.tools.eclipse.appengine.libraries.model.Library;
 import com.google.cloud.tools.eclipse.appengine.ui.AppEngineImages;
-import com.google.cloud.tools.eclipse.appengine.ui.AppEngineLibrariesSelectorGroup;
+import com.google.cloud.tools.eclipse.appengine.ui.AppEngineLibrariesRadioGroup;
 
 public class AppEngineLibrariesPage extends WizardPage 
     implements IClasspathContainerPage, IClasspathContainerPageExtension {
 
-  private AppEngineLibrariesSelectorGroup librariesSelector;
+  private AppEngineLibrariesRadioGroup librariesSelector;
 
   public AppEngineLibrariesPage() {
     super("appengine-libraries-page"); //$NON-NLS-1$
@@ -48,7 +48,7 @@ public class AppEngineLibrariesPage extends WizardPage
     Composite composite = new Composite(parent, SWT.BORDER);
     composite.setLayout(new GridLayout(2, true));
     
-    librariesSelector = new AppEngineLibrariesSelectorGroup(composite);
+    librariesSelector = new AppEngineLibrariesRadioGroup(composite);
     
     setControl(composite);
   }
@@ -60,9 +60,16 @@ public class AppEngineLibrariesPage extends WizardPage
 
   @Override
   public IClasspathEntry getSelection() {
-    // TODO Auto-generated method stub
-    Collection<Library> libraries = librariesSelector.getSelectedLibraries();
-    return null;
+    Library library = librariesSelector.getSelectedLibrary();
+
+    if (library == null) {
+      return null;
+    }
+    try {
+      return BuildPath.makeClasspathEntry(library);
+    } catch (CoreException ex) {
+      return null;
+    }
   }
 
   @Override
@@ -73,6 +80,9 @@ public class AppEngineLibrariesPage extends WizardPage
 
   @Override
   public void initialize(IJavaProject project, IClasspathEntry[] currentEntries) {
+    // TODO fill in existing libraries but what's called first?
+    // maybe don't include libraries already in build path
+    // initialize or createControl?
   }
 
 }
