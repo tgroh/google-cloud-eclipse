@@ -74,7 +74,7 @@ public class AppEngineLibrariesSelectorGroup implements ISelectionProvider {
   private void createContents(Composite parentContainer) {
     Group apiGroup = new Group(parentContainer, SWT.NONE);
     apiGroup.setText(Messages.getString("appengine.libraries.group"));
-    GridDataFactory.swtDefaults().grab(true, false).span(2, 1).applyTo(apiGroup);
+    GridDataFactory.fillDefaults().span(2, 1).applyTo(apiGroup);
 
     for (Library library : availableLibraries.values()) {
       Button libraryButton = new Button(apiGroup, SWT.CHECK);
