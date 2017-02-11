@@ -38,8 +38,8 @@ public class AppEngineLibrariesPage extends WizardPage
 
   public AppEngineLibrariesPage() {
     super("appengine-libraries-page"); //$NON-NLS-1$
-    setTitle("App Engine Standard Environment Libraries");
-    setDescription("Additional jars commonly used in App Engine Standard Environment applications");
+    setTitle(Messages.getString("title"));
+    setDescription(Messages.getString("description"));
     setImageDescriptor(AppEngineImages.appEngine(64));
   }
 
