@@ -18,6 +18,8 @@ package com.google.cloud.tools.eclipse.appengine.libraries.ui;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
@@ -36,13 +38,16 @@ import com.google.cloud.tools.eclipse.appengine.libraries.model.Library;
 import com.google.cloud.tools.eclipse.appengine.ui.AppEngineImages;
 import com.google.cloud.tools.eclipse.appengine.ui.AppEngineLibrariesSelectorGroup;
 
-// todo use IClasspathContainerPageExtension2 to return more than one container
-public class AppEngineLibrariesPage extends WizardPage 
-    implements IClasspathContainerPage, IClasspathContainerPageExtension, IClasspathContainerPageExtension2 {
+/**
+ * UI for adding App Engine libraries to an existing project.
+ */
+public class AppEngineLibrariesPage extends WizardPage implements IClasspathContainerPage,
+    IClasspathContainerPageExtension, IClasspathContainerPageExtension2 {
 
+  private static final Logger logger = Logger.getLogger(AppEngineLibrariesPage.class.getName());
+  
   private AppEngineLibrariesSelectorGroup librariesSelector;
   private IJavaProject project;
-  private IClasspathEntry[] currentEntries;
 
   public AppEngineLibrariesPage() {
     super("appengine-libraries-page"); //$NON-NLS-1$
@@ -56,14 +61,6 @@ public class AppEngineLibrariesPage extends WizardPage
     Composite composite = new Composite(parent, SWT.BORDER);
     composite.setLayout(new GridLayout(2, true));
     
-    System.err.println("Initializing...");
-    for (IClasspathEntry entry: currentEntries) {
-      System.err.println(entry.getPath());
-    }
-    // TODO fill in existing libraries. Initialize is called before createControl.
-    // maybe don't include libraries already in build path.
-    // maybe add note of what's already included in the page
-    
     librariesSelector = new AppEngineLibrariesSelectorGroup(composite);
     
     setControl(composite);
@@ -76,7 +73,9 @@ public class AppEngineLibrariesPage extends WizardPage
 
   @Override
   public IClasspathEntry getSelection() {
-    // this should not be called by eclipse
+    // Since this class implements IClasspathContainerPageExtension2,
+    // Eclipse calls getNewContainers instead.
+    logger.log(Level.WARNING, "Unexpected call to getSelection()");
     return null;
   }
 
@@ -87,7 +86,6 @@ public class AppEngineLibrariesPage extends WizardPage
   @Override
   public void initialize(IJavaProject project, IClasspathEntry[] currentEntries) {
     this.project = project;
-    this.currentEntries = currentEntries;
   }
 
   @Override
@@ -97,12 +95,11 @@ public class AppEngineLibrariesPage extends WizardPage
       return null;
     }
     try {
-      IClasspathEntry[] added = BuildPath.addLibraries(project, libraries, new NullProgressMonitor());
+      IClasspathEntry[] added =
+          BuildPath.addLibraries(project, libraries, new NullProgressMonitor());
       return added;
     } catch (CoreException ex) {
-      // todo handle build path contains duplicate entry; don't add duplicate entries
-      ex.printStackTrace();
-      System.err.println(ex.getMessage());
+      logger.log(Level.WARNING, "Error adding libraries to project", ex);
       return new IClasspathEntry[0];
     }
   }
