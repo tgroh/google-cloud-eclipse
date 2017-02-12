@@ -42,6 +42,7 @@ public class AppEngineLibrariesPage extends WizardPage
 
   private AppEngineLibrariesSelectorGroup librariesSelector;
   private IJavaProject project;
+  private IClasspathEntry[] currentEntries;
 
   public AppEngineLibrariesPage() {
     super("appengine-libraries-page"); //$NON-NLS-1$
@@ -54,6 +55,14 @@ public class AppEngineLibrariesPage extends WizardPage
   public void createControl(Composite parent) {
     Composite composite = new Composite(parent, SWT.BORDER);
     composite.setLayout(new GridLayout(2, true));
+    
+    System.err.println("Initializing...");
+    for (IClasspathEntry entry: currentEntries) {
+      System.err.println(entry.getPath());
+    }
+    // TODO fill in existing libraries. Initialize is called before createControl.
+    // maybe don't include libraries already in build path.
+    // maybe add note of what's already included in the page
     
     librariesSelector = new AppEngineLibrariesSelectorGroup(composite);
     
@@ -77,15 +86,8 @@ public class AppEngineLibrariesPage extends WizardPage
 
   @Override
   public void initialize(IJavaProject project, IClasspathEntry[] currentEntries) {
-    System.err.println("Initializing...");
-    for (IClasspathEntry entry: currentEntries) {
-      System.err.println(entry.getPath());
-    }
-    // TODO fill in existing libraries. Initialize is called before createControl.
-    // maybe don't include libraries already in build path.
-    // maybe add note of what's already included in the page
-    
     this.project = project;
+    this.currentEntries = currentEntries;
   }
 
   @Override
@@ -99,6 +101,7 @@ public class AppEngineLibrariesPage extends WizardPage
       return added;
     } catch (CoreException ex) {
       // todo handle build path contains duplicate entry; don't add duplicate entries
+      ex.printStackTrace();
       System.err.println(ex.getMessage());
       return new IClasspathEntry[0];
     }

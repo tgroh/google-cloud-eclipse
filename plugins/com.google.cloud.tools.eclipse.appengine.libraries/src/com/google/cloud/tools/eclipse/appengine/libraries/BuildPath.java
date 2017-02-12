@@ -41,6 +41,7 @@ import org.osgi.framework.FrameworkUtil;
 
 import com.google.cloud.tools.eclipse.appengine.libraries.LibraryClasspathContainerResolverJob;
 import com.google.cloud.tools.eclipse.appengine.libraries.model.Library;
+import com.google.common.annotations.VisibleForTesting;
 
 public class BuildPath {
 
@@ -54,6 +55,10 @@ public class BuildPath {
     addLibraries(javaProject, libraries, monitor);
   }
 
+  /**
+   * @return the entries added to the classpath. 
+   *     Does not include entries previously present in classpath.
+   */
   public static IClasspathEntry[] addLibraries(
       IJavaProject javaProject, List<Library> libraries, IProgressMonitor monitor)
           throws JavaModelException, CoreException {
@@ -62,24 +67,26 @@ public class BuildPath {
         Messages.getString("adding.app.engine.libraries"), libraries.size()); //$NON-NLS-1$
 
     IClasspathEntry[] rawClasspath = javaProject.getRawClasspath();
-    IClasspathEntry[] newRawClasspath =
-        Arrays.copyOf(rawClasspath, rawClasspath.length + libraries.size());
-    ArrayList<IClasspathEntry> libraryContainers = new  ArrayList<>();
-    for (int i = 0; i < libraries.size(); i++) {
-      Library library = libraries.get(i);
+    ArrayList<IClasspathEntry> newRawClasspath = new ArrayList<>(rawClasspath.length + libraries.size());
+    newRawClasspath.addAll(Arrays.asList(rawClasspath));
+    ArrayList<IClasspathEntry> newEntries = new ArrayList<>();
+    for (Library library : libraries) {
       IClasspathEntry libraryContainer = makeClasspathEntry(library);
-      newRawClasspath[rawClasspath.length + i] = libraryContainer;
-      libraryContainers.add(libraryContainer);
+      if (!newRawClasspath.contains(libraryContainer)) {
+        newEntries.add(libraryContainer);
+        newRawClasspath.add(libraryContainer);
+      }
       subMonitor.worked(1);
     }
-    javaProject.setRawClasspath(newRawClasspath, subMonitor);
+    javaProject.setRawClasspath(newRawClasspath.toArray(new IClasspathEntry[0]), subMonitor);
     
     runContainerResolverJob(javaProject);
     
-    return libraryContainers.toArray(new IClasspathEntry[0]);
+    return newEntries.toArray(new IClasspathEntry[0]);
   }
 
-  public static IClasspathEntry makeClasspathEntry(Library library) throws CoreException {
+  @VisibleForTesting
+  static IClasspathEntry makeClasspathEntry(Library library) throws CoreException {
     IClasspathAttribute[] classpathAttributes = new IClasspathAttribute[1];
     if (library.isExport()) {
       boolean isWebApp = true;
@@ -95,7 +102,7 @@ public class BuildPath {
     return libraryContainer;
   }
   
-  public static void runContainerResolverJob(IJavaProject javaProject) {
+  private static void runContainerResolverJob(IJavaProject javaProject) {
     IEclipseContext context = EclipseContextFactory.getServiceContext(
         FrameworkUtil.getBundle(BuildPath.class).getBundleContext());
     final IEclipseContext childContext =
