@@ -16,7 +16,10 @@
 
 package com.google.cloud.tools.eclipse.appengine.libraries.ui;
 
+import java.util.ArrayList;
+
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.ui.wizards.IClasspathContainerPage;
@@ -31,10 +34,12 @@ import com.google.cloud.tools.eclipse.appengine.libraries.model.Library;
 import com.google.cloud.tools.eclipse.appengine.ui.AppEngineImages;
 import com.google.cloud.tools.eclipse.appengine.ui.AppEngineLibrariesRadioGroup;
 
+// todo use IClasspathContainerPageExtension2 to return more than one container
 public class AppEngineLibrariesPage extends WizardPage 
     implements IClasspathContainerPage, IClasspathContainerPageExtension {
 
   private AppEngineLibrariesRadioGroup librariesSelector;
+  private IJavaProject project;
 
   public AppEngineLibrariesPage() {
     super("appengine-libraries-page"); //$NON-NLS-1$
@@ -66,23 +71,32 @@ public class AppEngineLibrariesPage extends WizardPage
       return null;
     }
     try {
-      return BuildPath.makeClasspathEntry(library);
+      ArrayList<Library> libraries = new ArrayList<Library>();
+      libraries.add(library);
+      IClasspathEntry entry = BuildPath.addLibraries(project, libraries, new NullProgressMonitor());
+      return entry;
     } catch (CoreException ex) {
+      // todo handle build path contains duplicate entry; don't add duplicate entries
+      System.err.println(ex.getMessage());
       return null;
     }
   }
 
   @Override
   public void setSelection(IClasspathEntry containerEntry) {
-    // TODO Auto-generated method stub
-    
   }
 
   @Override
   public void initialize(IJavaProject project, IClasspathEntry[] currentEntries) {
-    // TODO fill in existing libraries but what's called first?
-    // maybe don't include libraries already in build path
-    // initialize or createControl?
+    System.err.println("Initializing...");
+    for (IClasspathEntry entry: currentEntries) {
+      System.err.println(entry.getPath());
+    }
+    // TODO fill in existing libraries. Initialize is called before createControl.
+    // maybe don't include libraries already in build path.
+    // maybe add note of what's already included in the page
+    
+    this.project = project;
   }
 
 }

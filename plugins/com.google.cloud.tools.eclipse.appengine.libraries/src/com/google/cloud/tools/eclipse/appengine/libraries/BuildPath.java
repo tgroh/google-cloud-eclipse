@@ -34,6 +34,7 @@ import org.eclipse.jdt.core.IClasspathAttribute;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
+import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jst.j2ee.classpathdep.UpdateClasspathAttributeUtil;
 import org.osgi.framework.FrameworkUtil;
 
@@ -48,24 +49,32 @@ public class BuildPath {
     if (libraries.isEmpty()) {
       return;
     }
+    IJavaProject javaProject = JavaCore.create(project);
+    addLibraries(javaProject, libraries, monitor);
+  }
+
+  public static IClasspathEntry addLibraries(
+      IJavaProject javaProject, List<Library> libraries, IProgressMonitor monitor)
+          throws JavaModelException, CoreException {
+    
     SubMonitor subMonitor = SubMonitor.convert(monitor,
         Messages.getString("adding.app.engine.libraries"), libraries.size()); //$NON-NLS-1$
-    IJavaProject javaProject = JavaCore.create(project);
+
     IClasspathEntry[] rawClasspath = javaProject.getRawClasspath();
     IClasspathEntry[] newRawClasspath =
         Arrays.copyOf(rawClasspath, rawClasspath.length + libraries.size());
+    IClasspathEntry libraryContainer = null;
     for (int i = 0; i < libraries.size(); i++) {
       Library library = libraries.get(i);
-      IClasspathEntry libraryContainer = makeClasspathEntry(library);
+      libraryContainer = makeClasspathEntry(library);
       newRawClasspath[rawClasspath.length + i] = libraryContainer;
       subMonitor.worked(1);
     }
-    javaProject.setRawClasspath(newRawClasspath, monitor);
-  
-    IEclipseContext context = EclipseContextFactory.getServiceContext(
-        FrameworkUtil.getBundle(BuildPath.class).getBundleContext());
+    javaProject.setRawClasspath(newRawClasspath, subMonitor);
     
-    runContainerResolverJob(javaProject, context);
+    runContainerResolverJob(javaProject);
+    
+    return libraryContainer;
   }
 
   public static IClasspathEntry makeClasspathEntry(Library library) throws CoreException {
@@ -84,7 +93,9 @@ public class BuildPath {
     return libraryContainer;
   }
   
-  private static void runContainerResolverJob(IJavaProject javaProject, IEclipseContext context) {
+  public static void runContainerResolverJob(IJavaProject javaProject) {
+    IEclipseContext context = EclipseContextFactory.getServiceContext(
+        FrameworkUtil.getBundle(BuildPath.class).getBundleContext());
     final IEclipseContext childContext =
         context.createChild(LibraryClasspathContainerResolverJob.class.getName());
     childContext.set(IJavaProject.class, javaProject);
