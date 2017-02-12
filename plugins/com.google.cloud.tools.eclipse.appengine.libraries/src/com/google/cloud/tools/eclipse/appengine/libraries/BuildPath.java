@@ -16,6 +16,7 @@
 
 package com.google.cloud.tools.eclipse.appengine.libraries;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -53,7 +54,7 @@ public class BuildPath {
     addLibraries(javaProject, libraries, monitor);
   }
 
-  public static IClasspathEntry addLibraries(
+  public static IClasspathEntry[] addLibraries(
       IJavaProject javaProject, List<Library> libraries, IProgressMonitor monitor)
           throws JavaModelException, CoreException {
     
@@ -63,18 +64,19 @@ public class BuildPath {
     IClasspathEntry[] rawClasspath = javaProject.getRawClasspath();
     IClasspathEntry[] newRawClasspath =
         Arrays.copyOf(rawClasspath, rawClasspath.length + libraries.size());
-    IClasspathEntry libraryContainer = null;
+    ArrayList<IClasspathEntry> libraryContainers = new  ArrayList<>();
     for (int i = 0; i < libraries.size(); i++) {
       Library library = libraries.get(i);
-      libraryContainer = makeClasspathEntry(library);
+      IClasspathEntry libraryContainer = makeClasspathEntry(library);
       newRawClasspath[rawClasspath.length + i] = libraryContainer;
+      libraryContainers.add(libraryContainer);
       subMonitor.worked(1);
     }
     javaProject.setRawClasspath(newRawClasspath, subMonitor);
     
     runContainerResolverJob(javaProject);
     
-    return libraryContainer;
+    return libraryContainers.toArray(new IClasspathEntry[0]);
   }
 
   public static IClasspathEntry makeClasspathEntry(Library library) throws CoreException {
