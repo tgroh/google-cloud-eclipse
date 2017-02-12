@@ -24,6 +24,7 @@ import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.ui.wizards.IClasspathContainerPage;
 import org.eclipse.jdt.ui.wizards.IClasspathContainerPageExtension;
+import org.eclipse.jdt.ui.wizards.IClasspathContainerPageExtension2;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridLayout;
@@ -36,7 +37,7 @@ import com.google.cloud.tools.eclipse.appengine.ui.AppEngineLibrariesRadioGroup;
 
 // todo use IClasspathContainerPageExtension2 to return more than one container
 public class AppEngineLibrariesPage extends WizardPage 
-    implements IClasspathContainerPage, IClasspathContainerPageExtension {
+    implements IClasspathContainerPage, IClasspathContainerPageExtension, IClasspathContainerPageExtension2 {
 
   private AppEngineLibrariesRadioGroup librariesSelector;
   private IJavaProject project;
@@ -65,21 +66,8 @@ public class AppEngineLibrariesPage extends WizardPage
 
   @Override
   public IClasspathEntry getSelection() {
-    Library library = librariesSelector.getSelectedLibrary();
-
-    if (library == null) {
-      return null;
-    }
-    try {
-      ArrayList<Library> libraries = new ArrayList<Library>();
-      libraries.add(library);
-      IClasspathEntry entry = BuildPath.addLibraries(project, libraries, new NullProgressMonitor());
-      return entry;
-    } catch (CoreException ex) {
-      // todo handle build path contains duplicate entry; don't add duplicate entries
-      System.err.println(ex.getMessage());
-      return null;
-    }
+    // this should not be called by eclipse
+    return null;
   }
 
   @Override
@@ -97,6 +85,26 @@ public class AppEngineLibrariesPage extends WizardPage
     // maybe add note of what's already included in the page
     
     this.project = project;
+  }
+
+  @Override
+  public IClasspathEntry[] getNewContainers() {
+    Library library = librariesSelector.getSelectedLibrary();
+// todo handle mutliple entries
+    ArrayList<IClasspathEntry> added = new ArrayList<>();
+    if (library == null) {
+      return null;
+    }
+    try {
+      ArrayList<Library> libraries = new ArrayList<Library>();
+      libraries.add(library);
+      IClasspathEntry entry = BuildPath.addLibraries(project, libraries, new NullProgressMonitor());
+      added.add(entry);
+    } catch (CoreException ex) {
+      // todo handle build path contains duplicate entry; don't add duplicate entries
+      System.err.println(ex.getMessage());
+    }
+    return added.toArray(new IClasspathEntry[0]);
   }
 
 }
