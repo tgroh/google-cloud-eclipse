@@ -215,7 +215,7 @@ public class StandardDeployJob extends WorkspaceJob {
     AppEngineDeployOutput deployOutput = null;
 
     try {
-      deployOutput =  getDeployOutput();
+      deployOutput = getDeployOutput();
     } catch (CoreException ex) {
       return StatusUtil.error(getClass(), Messages.getString("browser.launch.failed"), ex);
     }
@@ -255,22 +255,20 @@ public class StandardDeployJob extends WorkspaceJob {
   @VisibleForTesting
   public String getDeployedAppUrl(AppEngineDeployOutput deployOutput) {
     String project = deployConfiguration.getProject();
-    Boolean promoting = deployConfiguration.getPromote();
+    boolean promoting = deployConfiguration.getPromote();
     String version = deployOutput.getVersion();
     String service = deployOutput.getService();
     Boolean usingDefaultService = DEFAULT_SERVICE.equals(service);
-    String appLocation;
 
     if (promoting && usingDefaultService) {
-      appLocation = "https://" + project + ".appspot.com";
+      return "https://" + project + ".appspot.com";
     } else if (promoting && !usingDefaultService) {
-      appLocation = "https://" + service +  "-dot-"+  project + ".appspot.com";
+      return "https://" + service +  "-dot-"+  project + ".appspot.com";
     } else if (!promoting && usingDefaultService) {
-      appLocation = "https://" + version + "-dot-" + project + ".appspot.com";
+      return "https://" + version + "-dot-" + project + ".appspot.com";
     } else {
-      appLocation = "https://" + version + "-dot-" + service +  "-dot-"+  project + ".appspot.com";
+      return "https://" + version + "-dot-" + service +  "-dot-"+  project + ".appspot.com";
     }
-    return appLocation;
   }
 
   private final class StoreProcessObjectListener implements ProcessStartListener {

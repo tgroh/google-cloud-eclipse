@@ -29,15 +29,6 @@ import java.util.List;
 // TODO: move into appengine-plugins-core
 // TODO expand to include other Version attributes
 public class AppEngineDeployOutput {
-  @VisibleForTesting
-  AppEngineDeployOutput(String id, String service) {
-    Version version = new Version();
-    version.id = id;
-    version.service = service;
-    versions = new ArrayList<Version>();
-    versions.add(version);
-  }
-
   private static class Version {
     String id;
     String service;

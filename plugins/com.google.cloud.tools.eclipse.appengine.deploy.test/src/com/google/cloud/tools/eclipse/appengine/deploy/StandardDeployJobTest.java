@@ -24,11 +24,8 @@ import org.junit.Test;
 public class StandardDeployJobTest {
   @Test
   public void testGetDeployedAppUrl_promoteWithDefaultService() {    
-    DefaultDeployConfiguration config = new DefaultDeployConfiguration();
-    config.setPromote(true);
-    config.setProject("testProject");
-    StandardDeployJob standardDeployJob = new StandardDeployJob(null, null, null, null, null, config);
-    AppEngineDeployOutput deployOutput = new AppEngineDeployOutput("version", "default");
+    StandardDeployJob standardDeployJob = createStandardDeployJob(true);
+    AppEngineDeployOutput deployOutput = createDeployOutput("version", "default");
 
     Assert.assertEquals("https://testProject.appspot.com",
         standardDeployJob.getDeployedAppUrl(deployOutput));
@@ -36,11 +33,8 @@ public class StandardDeployJobTest {
   
   @Test
   public void testGetDeployedAppUrl_promoteWithNonDefaultService() {
-    DefaultDeployConfiguration config = new DefaultDeployConfiguration();
-    config.setPromote(true);
-    config.setProject("testProject");
-    StandardDeployJob standardDeployJob = new StandardDeployJob(null, null, null, null, null, config);
-    AppEngineDeployOutput deployOutput = new AppEngineDeployOutput("version", "service");
+    StandardDeployJob standardDeployJob = createStandardDeployJob(true);
+    AppEngineDeployOutput deployOutput = createDeployOutput("version", "service");
 
     Assert.assertEquals("https://service-dot-testProject.appspot.com",
         standardDeployJob.getDeployedAppUrl(deployOutput));
@@ -48,25 +42,44 @@ public class StandardDeployJobTest {
   
   @Test
   public void testGetDeployedAppUrl_noPromoteWithDefaultService() {
-    DefaultDeployConfiguration config = new DefaultDeployConfiguration();
-    config.setPromote(false);
-    config.setProject("testProject");
-    StandardDeployJob standardDeployJob = new StandardDeployJob(null, null, null, null, null, config);
-    AppEngineDeployOutput deployOutput = new AppEngineDeployOutput("version", "default");
+    StandardDeployJob standardDeployJob = createStandardDeployJob(false);
+    AppEngineDeployOutput deployOutput = createDeployOutput("version", "default");
 
     Assert.assertEquals("https://version-dot-testProject.appspot.com",
         standardDeployJob.getDeployedAppUrl(deployOutput));
   }
-  
+
   @Test
   public void testGetDeployedAppUrl_noPromoteWithNonDefaultService() {
-    DefaultDeployConfiguration config = new DefaultDeployConfiguration();
-    config.setPromote(false);
-    config.setProject("testProject");
-    StandardDeployJob standardDeployJob = new StandardDeployJob(null, null, null, null, null, config);
-    AppEngineDeployOutput deployOutput = new AppEngineDeployOutput("version", "service");
+    StandardDeployJob standardDeployJob = createStandardDeployJob(false);
+    AppEngineDeployOutput deployOutput = createDeployOutput("version", "service");
 
     Assert.assertEquals("https://version-dot-service-dot-testProject.appspot.com",
         standardDeployJob.getDeployedAppUrl(deployOutput));
+  }
+
+  private StandardDeployJob createStandardDeployJob(boolean setPromote) {
+    DefaultDeployConfiguration config = new DefaultDeployConfiguration();
+    config.setPromote(setPromote);
+    config.setProject("testProject");
+    return new StandardDeployJob(null, null, null, null, null, config);
+  }
+
+  private AppEngineDeployOutput createDeployOutput(String version, String service) {
+    String jsonOutput =
+        "{\n" +
+            "  \"configs\": [],\n" +
+            "  \"versions\": [\n" +
+            "    {\n" +
+            "      \"id\": \"" + version + "\",\n" +
+            "      \"last_deployed_time\": null,\n" +
+            "      \"project\": \"some-project\",\n" +
+            "      \"service\": \"" + service + "\",\n" +
+            "      \"traffic_split\": null,\n" +
+            "      \"version\": null\n" +
+            "    }\n" +
+            "  ]\n" +
+            "}\n";
+    return AppEngineDeployOutput.parse(jsonOutput);
   }
 }
