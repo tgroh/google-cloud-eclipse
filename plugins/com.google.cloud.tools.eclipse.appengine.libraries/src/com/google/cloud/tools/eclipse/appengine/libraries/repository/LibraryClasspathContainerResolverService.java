@@ -117,18 +117,25 @@ public class LibraryClasspathContainerResolverService
                                   IProgressMonitor monitor) {
     Preconditions.checkArgument(containerPath.segment(0).equals(Library.CONTAINER_PATH_PREFIX));
     try {
+
       String libraryId = containerPath.segment(1);
       Library library = libraries.get(libraryId);
       if (library != null) {
         List<Job> sourceAttacherJobs = new ArrayList<>();
-        LibraryClasspathContainer container = resolveLibraryFiles(javaProject, containerPath,
-                                                                  library, sourceAttacherJobs,
-                                                                  monitor);
+        LibraryClasspathContainer container = null;
+        try {
+          Job.getJobManager().beginRule(javaProject.getProject(), /* monitor */ null);
+          container =
+              resolveLibraryFiles(javaProject, containerPath, library, sourceAttacherJobs, monitor);
+          serializer.saveContainer(javaProject, container);
+        } finally {
+          Job.getJobManager().endRule(javaProject.getProject());
+        }
+        // setClasspathContainer must be executed outside of the project rule
         JavaCore.setClasspathContainer(containerPath,
                                        new IJavaProject[] {javaProject},
                                        new IClasspathContainer[] {container},
                                        new NullProgressMonitor());
-        serializer.saveContainer(javaProject, container);
         for (Job job : sourceAttacherJobs) {
           job.schedule();
         }
