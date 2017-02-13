@@ -35,7 +35,6 @@ public class LibraryClasspathContainerResolverJob extends Job {
     Preconditions.checkNotNull(javaProject, "javaProject is null");
     this.javaProject = javaProject;
     setUser(true);
-    setRule(javaProject.getSchedulingRule());
   }
 
   @Override
