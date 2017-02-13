@@ -216,15 +216,14 @@ public class StandardDeployJob extends WorkspaceJob {
 
     try {
       deployOutput = getDeployOutput();
+      String appLocation = getDeployedAppUrl(deployOutput);
+      String project = deployConfiguration.getProject();
+      String browserTitle = Messages.getString("browser.launch.title", project);
+      WorkbenchUtil.openInBrowserInUiThread(appLocation, null, browserTitle, browserTitle);
+      return Status.OK_STATUS;
     } catch (CoreException ex) {
       return StatusUtil.error(getClass(), Messages.getString("browser.launch.failed"), ex);
     }
-
-    String appLocation = getDeployedAppUrl(deployOutput);
-    String project = deployConfiguration.getProject();
-    String browserTitle = Messages.getString("browser.launch.title", project);
-    WorkbenchUtil.openInBrowserInUiThread(appLocation, null, browserTitle, browserTitle);
-    return Status.OK_STATUS;
   }
 
   /**

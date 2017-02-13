@@ -16,10 +16,8 @@
 
 package com.google.cloud.tools.eclipse.appengine.deploy;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.gson.Gson;
 import com.google.gson.JsonParseException;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -35,6 +33,10 @@ public class AppEngineDeployOutput {
   }
 
   private List<Version> versions;
+
+  private AppEngineDeployOutput() {
+
+  }
 
   /**
    * @return version, can be null
