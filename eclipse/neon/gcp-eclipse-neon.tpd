@@ -15,9 +15,12 @@ location "http://download.eclipse.org/cbi/updates/license" {
     org.eclipse.license.feature.group    
 }
 
-location "http://download.eclipse.org/releases/neon" {
+location "http://download.eclipse.org/eclipse/updates/4.6-M-builds/M-4.6.3RC1-201702080400" {
 	org.eclipse.sdk.feature.group
 	org.eclipse.jdt.feature.group
+}
+
+location "http://download.eclipse.org/releases/neon" {
 	org.eclipse.m2e.feature.feature.group
 	org.eclipse.m2e.sdk.feature.feature.group
 	org.eclipse.m2e.wtp.feature.feature.group
