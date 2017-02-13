@@ -17,10 +17,16 @@
 package com.google.cloud.tools.eclipse.projectselector;
 
 import com.google.api.client.auth.oauth2.Credential;
+import com.google.api.client.googleapis.json.GoogleJsonResponseException;
+import com.google.api.client.http.HttpStatusCodes;
 import com.google.api.client.http.HttpTransport;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson.JacksonFactory;
+import com.google.api.services.appengine.v1.Appengine;
+import com.google.api.services.appengine.v1.Appengine.Apps;
+import com.google.api.services.appengine.v1.Appengine.Apps.Get;
+import com.google.api.services.appengine.v1.model.Application;
 import com.google.api.services.cloudresourcemanager.CloudResourceManager;
 import com.google.api.services.cloudresourcemanager.CloudResourceManager.Projects;
 import com.google.api.services.cloudresourcemanager.model.ListProjectsResponse;
@@ -88,6 +94,16 @@ public class ProjectRepository {
     return projects;
   }
 
+  private Apps getAppsApi(Credential credential) {
+    JsonFactory jsonFactory = new JacksonFactory();
+    HttpTransport transport = new NetHttpTransport();
+    Appengine appengine =
+        new Appengine.Builder(transport, jsonFactory, credential)
+            .setApplicationName(CloudToolsInfo.USER_AGENT).build();
+    Apps apps = appengine.apps();
+    return apps;
+  }
+
   private List<GcpProject> convertToGcpProjects(List<Project> projects) {
     List<GcpProject> gcpProjects = new ArrayList<>();
     for (Project project : projects) {
@@ -100,6 +116,28 @@ public class ProjectRepository {
 
   private GcpProject convertToGcpProject(Project project) {
     return new GcpProject(project.getName(), project.getProjectId());
+  }
+
+  /**
+   * @param credential
+   * @param id
+   * @return
+   * @throws ProjectRepositoryException 
+   */
+  public boolean hasAppEngineApplication(Credential credential, String projectId)
+      throws ProjectRepositoryException {
+    try {
+      Application application = getAppsApi(credential).get(projectId).execute();
+      return true;
+    } catch (IOException ex) {
+      if (ex instanceof GoogleJsonResponseException) {
+        GoogleJsonResponseException json = (GoogleJsonResponseException) ex;
+        if (json.getStatusCode() == HttpStatusCodes.STATUS_CODE_NOT_FOUND) {
+          return false;
+        }
+      }
+      throw new ProjectRepositoryException(ex);
+    }
   }
 
 }

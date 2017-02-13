@@ -57,6 +57,10 @@ import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.layout.GridLayoutFactory;
+import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.ISelectionChangedListener;
+import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.layout.GridData;
@@ -273,12 +277,40 @@ public class StandardDeployPreferencesPanel extends DeployPreferencesPanel {
     GridDataFactory.swtDefaults().align(SWT.BEGINNING, SWT.BEGINNING).applyTo(projectIdLabel);
     projectSelector = new ProjectSelector(this);
     GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER)
-      .grab(true, false).hint(300, 100).applyTo(projectSelector);
+      .grab(true, false).hint(300, 150).applyTo(projectSelector);
     accountSelector.addSelectionListener(new Runnable() {
       @Override
       public void run() {
         Credential selectedCredential = accountSelector.getSelectedCredential();
         projectSelector.setProjects(retrieveProjects(selectedCredential));
+      }
+    });
+    projectSelector.addSelectionChangedListener(new ISelectionChangedListener() {
+      
+      @Override
+      public void selectionChanged(SelectionChangedEvent event) {
+        IStructuredSelection selection = (IStructuredSelection) event.getSelection();
+        if (!selection.isEmpty()) {
+          GcpProject project = (GcpProject) selection.getFirstElement();
+          Credential selectedCredential = accountSelector.getSelectedCredential();
+          String projectId = project.getId();
+          boolean hasAppEngineApplication = false;
+          try {
+            hasAppEngineApplication = projectRepository.hasAppEngineApplication(selectedCredential, projectId);
+          } catch (ProjectRepositoryException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+          }
+          if (!hasAppEngineApplication) {
+            projectSelector.setStatusLink(
+                Messages.getString("projectselector.missing.appengine.application.link",
+                                   projectId));
+          } else {
+            projectSelector.setStatusLink("");
+          }
+        } else {
+          projectSelector.setStatusLink("");
+        }
       }
     });
   }
