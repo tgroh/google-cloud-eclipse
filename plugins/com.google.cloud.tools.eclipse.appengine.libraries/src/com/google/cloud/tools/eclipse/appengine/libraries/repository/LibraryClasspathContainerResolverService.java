@@ -124,7 +124,7 @@ public class LibraryClasspathContainerResolverService
         List<Job> sourceAttacherJobs = new ArrayList<>();
         LibraryClasspathContainer container = null;
         try {
-          Job.getJobManager().beginRule(javaProject.getProject(), /* monitor */ null);
+          Job.getJobManager().beginRule(javaProject.getSchedulingRule(), /* monitor */ null);
           container =
               resolveLibraryFiles(javaProject, containerPath, library, sourceAttacherJobs, monitor);
           serializer.saveContainer(javaProject, container);
