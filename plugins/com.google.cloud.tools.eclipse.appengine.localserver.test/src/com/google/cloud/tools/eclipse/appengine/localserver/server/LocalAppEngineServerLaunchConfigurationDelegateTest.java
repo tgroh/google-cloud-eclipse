@@ -89,7 +89,7 @@ public class LocalAppEngineServerLaunchConfigurationDelegateTest {
 
   @Test
   public void testEqualPorts_actualToNullAndSameActualDefaults() {
-    assertTrue(LocalAppEngineServerLaunchConfigurationDelegate.equalPorts(1, null, 8080));
+    assertTrue(LocalAppEngineServerLaunchConfigurationDelegate.equalPorts(8080, null, 8080));
   }
 
   @Test
