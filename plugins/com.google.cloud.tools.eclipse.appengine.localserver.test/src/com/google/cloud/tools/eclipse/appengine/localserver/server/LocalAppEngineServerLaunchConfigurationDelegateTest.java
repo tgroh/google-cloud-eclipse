@@ -68,20 +68,69 @@ public class LocalAppEngineServerLaunchConfigurationDelegateTest {
     assertEquals("http://192.168.1.1:8085", url);
   }
 
+
+  // equalPorts tests must use largish numbers to avoid artifacts from
+  // Integer#valueOf(int)'s use an Integer cache for -127 to 128
+
   @Test
-  public void testComparePorts() {
-    assertTrue(LocalAppEngineServerLaunchConfigurationDelegate.equalPorts(null, null, 1));
+  public void testEqualPorts_nullToNullAndActualDefault() {
+    assertTrue(LocalAppEngineServerLaunchConfigurationDelegate.equalPorts(null, null, 8080));
+  }
+
+  @Test
+  public void testEqualPorts_nullToNullAnd0Default() {
     assertFalse(LocalAppEngineServerLaunchConfigurationDelegate.equalPorts(null, null, 0));
-    assertTrue(LocalAppEngineServerLaunchConfigurationDelegate.equalPorts(1, 1, -1));
-    assertTrue(LocalAppEngineServerLaunchConfigurationDelegate.equalPorts(1, null, 1));
-    assertFalse(LocalAppEngineServerLaunchConfigurationDelegate.equalPorts(1, null, 2));
-    assertFalse(LocalAppEngineServerLaunchConfigurationDelegate.equalPorts(null, 1, 2));
-    assertTrue(LocalAppEngineServerLaunchConfigurationDelegate.equalPorts(null, 1, 1));
-    assertFalse(LocalAppEngineServerLaunchConfigurationDelegate.equalPorts(0, 1, 1));
-    assertFalse(LocalAppEngineServerLaunchConfigurationDelegate.equalPorts(1, 0, 1));
-    assertFalse(LocalAppEngineServerLaunchConfigurationDelegate.equalPorts(0, null, 1));
-    assertFalse(LocalAppEngineServerLaunchConfigurationDelegate.equalPorts(null, 0, 1));
-    assertFalse(LocalAppEngineServerLaunchConfigurationDelegate.equalPorts(0, 0, 1));
+  }
+
+  @Test
+  public void testEqualPorts_actualToActualAndInvalidDefault() {
+    assertTrue(LocalAppEngineServerLaunchConfigurationDelegate.equalPorts(8080, 8080, -1));
+  }
+
+  @Test
+  public void testEqualPorts_actualToNullAndSameActualDefaults() {
+    assertTrue(LocalAppEngineServerLaunchConfigurationDelegate.equalPorts(1, null, 8080));
+  }
+
+  @Test
+  public void testEqualPorts_actualToNullAndDifferentActualDefault() {
+    assertFalse(LocalAppEngineServerLaunchConfigurationDelegate.equalPorts(8080, null, 9000));
+  }
+
+  @Test
+  public void testEqualPorts_nullToActualAndDifferentActualDefault() {
+    assertFalse(LocalAppEngineServerLaunchConfigurationDelegate.equalPorts(null, 8080, 9000));
+  }
+
+  @Test
+  public void testEqualPorts_nullToActualAndSameActualDefault() {
+    assertTrue(LocalAppEngineServerLaunchConfigurationDelegate.equalPorts(null, 8080, 8080));
+  }
+
+  @Test
+  public void testEqualPorts_0ToActualAndSameActualDefault() {
+    assertFalse(LocalAppEngineServerLaunchConfigurationDelegate.equalPorts(0, 8080, 8080));
+  }
+
+  @Test
+  public void testEqualPorts_actualTo0AndSameActualDefault() {
+    assertFalse(LocalAppEngineServerLaunchConfigurationDelegate.equalPorts(8080, 0, 8080));
+  }
+
+  @Test
+  public void testEqualPorts_0ToNullAndActualDefault() {
+    assertFalse(LocalAppEngineServerLaunchConfigurationDelegate.equalPorts(0, null, 8080));
+  }
+
+  @Test
+  public void testEqualPorts_nullTo0AndActualDefault() {
+    assertFalse(LocalAppEngineServerLaunchConfigurationDelegate.equalPorts(null, 0, 8080));
+  }
+
+  @Test
+  public void testEqualPorts_0To0AndActualDefault() {
+    // 0 should never be equal
+    assertFalse(LocalAppEngineServerLaunchConfigurationDelegate.equalPorts(0, 0, 8080));
   }
 
 

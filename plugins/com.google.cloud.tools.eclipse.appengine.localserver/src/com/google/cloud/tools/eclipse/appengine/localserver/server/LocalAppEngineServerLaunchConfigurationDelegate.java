@@ -87,6 +87,10 @@ public class LocalAppEngineServerLaunchConfigurationDelegate
     return !Strings.isNullOrEmpty(value) ? value : nullOrEmptyValue;
   }
 
+  private static int ifNull(Integer value, int nullValue) {
+    return value != null ? value : nullValue;
+  }
+
   private static void validateCloudSdk() throws CoreException  {
     try {
       CloudSdk cloudSdk = new CloudSdk.Builder().build();
@@ -197,21 +201,26 @@ public class LocalAppEngineServerLaunchConfigurationDelegate
   /**
    * Check for known conflicting settings.
    */
-  private static IStatus checkConflicts(RunConfiguration ours, RunConfiguration theirs,
-      MultiStatus status) throws CoreException {
+  @VisibleForTesting
+  static IStatus checkConflicts(RunConfiguration ours, RunConfiguration theirs,
+      MultiStatus status) {
     Class<?> clazz = LocalAppEngineServerLaunchConfigurationDelegate.class;
     // use {0,number,#} to avoid localized port numbers
     if (equalPorts(ours.getPort(), theirs.getPort(),
         LocalAppEngineServerBehaviour.DEFAULT_SERVER_PORT)) {
       status.add(StatusUtil.error(clazz,
-          MessageFormat.format("server port: {0,number,#}", ours.getPort())));
+          MessageFormat.format("server port: {0,number,#}",
+              ifNull(ours.getPort(), LocalAppEngineServerBehaviour.DEFAULT_SERVER_PORT))));
     }
     if (equalPorts(ours.getAdminPort(), theirs.getAdminPort(),
         LocalAppEngineServerBehaviour.DEFAULT_ADMIN_PORT)) {
       status.add(StatusUtil.error(clazz,
-          MessageFormat.format("admin port: {0,number,#}", ours.getAdminPort())));
+          MessageFormat.format("admin port: {0,number,#}",
+              ifNull(ours.getAdminPort(), LocalAppEngineServerBehaviour.DEFAULT_ADMIN_PORT))));
     }
     if (equalPorts(ours.getApiPort(), theirs.getApiPort(), 0)) {
+      // ours.getAdminPort() will never be null with a 0 default
+      Preconditions.checkNotNull(ours.getApiPort());
       status.add(StatusUtil.error(clazz,
           MessageFormat.format("API port: {0,number,#}", ours.getAdminPort())));
     }
@@ -231,10 +240,16 @@ public class LocalAppEngineServerLaunchConfigurationDelegate
   /** Compare whether two port specs map to the same port. */
   @VisibleForTesting
   static boolean equalPorts(Integer ours, Integer theirs, int defaultValue) {
-    if (ours == null && theirs == null) {
-      return defaultValue != 0;
+    if (ours == null) {
+      ours = defaultValue;
     }
-    return Objects.equals(ours, theirs);
+    if (theirs == null) {
+      theirs = defaultValue;
+    }
+    if (ours == 0 || theirs == 0) {
+      return false;
+    }
+    return ours.equals(theirs);
   }
 
   @Override
