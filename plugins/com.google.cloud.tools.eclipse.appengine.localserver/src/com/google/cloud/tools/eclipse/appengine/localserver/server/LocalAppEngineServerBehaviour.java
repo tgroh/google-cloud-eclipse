@@ -204,27 +204,27 @@ public class LocalAppEngineServerBehaviour extends ServerBehaviourDelegate
   }
 
   /**
-   * @param portProber returns true if the argument is a port that is in use
+   * Check if the configured port (or its default) is in use. Returns the port to be used, or throws
+   * an exception if the port is in use.
+   * 
+   * @param portInUse returns true if the argument is a port that is in use
    * @return the port value ⊂ [0, 65535]
+   * @throws CoreException if the port is in use
    */
   @VisibleForTesting
   static int checkPort(Integer portOrNull, int defaultValue,
-      Predicate<Integer> portProber)
+      Predicate<Integer> portInUse)
       throws CoreException {
     int port = portOrNull == null ? defaultValue : portOrNull.intValue();
     if (port < 0 || port > 65535) {
       throw new CoreException(newErrorStatus(Messages.getString("PORT_OUT_OF_RANGE")));
     }
 
-    if (port != 0 && portProber.apply(port)) {
+    if (port != 0 && portInUse.apply(port)) {
       throw new CoreException(
           newErrorStatus(Messages.getString("PORT_IN_USE", String.valueOf(port))));
     }
     return port;
-  }
-
-  private static boolean hasAttribute(IServer server, String attribute) {
-    return server.getAttribute(attribute, (String) null) != null;
   }
 
   /**
@@ -259,21 +259,17 @@ public class LocalAppEngineServerBehaviour extends ServerBehaviourDelegate
       throws CoreException {
     
     // Check ports before setting the STARTING state.
-    Predicate<Integer> portProber = new Predicate<Integer>() {
-
+    Predicate<Integer> portInUse = new Predicate<Integer>() {
       @Override
       public boolean apply(Integer port) {
-        return port == null || SocketUtil.isPortInUse(port);
+        Preconditions.checkNotNull(port);
+        return SocketUtil.isPortInUse(port);
       }
     };
 
-    serverPort = checkPort(devServerRunConfiguration.getPort(), DEFAULT_SERVER_PORT, portProber);
-    adminPort = checkPort(devServerRunConfiguration.getAdminPort(), DEFAULT_ADMIN_PORT, portProber);
-    checkPort(devServerRunConfiguration.getApiPort(), DEFAULT_API_PORT, portProber);
-
-    if (devServerRunConfiguration.getAdminPort() == null) {
-      devServerRunConfiguration.setAdminPort(DEFAULT_ADMIN_PORT);
-    }
+    serverPort = checkPort(devServerRunConfiguration.getPort(), DEFAULT_SERVER_PORT, portInUse);
+    adminPort = checkPort(devServerRunConfiguration.getAdminPort(), DEFAULT_ADMIN_PORT, portInUse);
+    checkPort(devServerRunConfiguration.getApiPort(), DEFAULT_API_PORT, portInUse);
 
     setServerState(IServer.STATE_STARTING);
 

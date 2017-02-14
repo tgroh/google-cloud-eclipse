@@ -49,9 +49,11 @@ import org.mockito.runners.MockitoJUnitRunner;
 public class LocalAppEngineServerLaunchConfigurationDelegateTest {
 
   @Mock
-  ILaunchConfiguration launchConfiguration;
-  @Mock private IServer server;
-  @Mock private LocalAppEngineServerBehaviour serverBehavior;
+  private ILaunchConfiguration launchConfiguration;
+  @Mock
+  private IServer server;
+  @Mock
+  private LocalAppEngineServerBehaviour serverBehavior;
 
   @Before
   public void setUp() {

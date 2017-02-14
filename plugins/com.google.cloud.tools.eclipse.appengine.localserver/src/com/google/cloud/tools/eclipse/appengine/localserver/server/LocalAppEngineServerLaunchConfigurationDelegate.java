@@ -163,15 +163,12 @@ public class LocalAppEngineServerLaunchConfigurationDelegate
       devServerRunConfiguration.setPort(serverPort);
     }
 
-    int adminPort =
-        configuration.getAttribute(LocalAppEngineServerBehaviour.ADMIN_PORT_ATTRIBUTE_NAME, -1);
-    if (adminPort < 0) {
-      adminPort = server.getAttribute(LocalAppEngineServerBehaviour.ADMIN_PORT_ATTRIBUTE_NAME,
-          LocalAppEngineServerBehaviour.DEFAULT_ADMIN_PORT);
-    }
+    int adminPort = getPortAttribute(LocalAppEngineServerBehaviour.ADMIN_PORT_ATTRIBUTE_NAME,
+        LocalAppEngineServerBehaviour.DEFAULT_ADMIN_PORT, configuration, server);
     if (adminPort >= 0) {
       devServerRunConfiguration.setAdminPort(adminPort);
     }
+    // TODO: apiPort
 
     // vmArguments is exactly as supplied by the user in the dialog box
     String vmArgumentString = getVMArguments(configuration);

@@ -21,7 +21,6 @@ import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
 
 import com.google.cloud.tools.eclipse.util.io.DeleteAllVisitor;
 import org.eclipse.core.runtime.IStatus;
@@ -116,7 +115,7 @@ public class StatusUtilTest {
   @Test
   public void testFilter_normalStatus() {
     IStatus error = StatusUtil.error(StatusUtil.class, "test error msg");
-    assertTrue(error == StatusUtil.filter(error));
+    assertThat(StatusUtil.filter(error), is(sameInstance(error)));
   }
 
   @Test
