@@ -14,21 +14,16 @@
  * limitations under the License.
  */
 
-package com.google.cloud.tools.eclipse.appengine.validation;
+package com.google.cloud.tools.eclipse.projectselector;
 
-import org.junit.Test;
+public class ProjectRepositoryException extends Exception {
 
-public class BannedElementTest {
-
-  @Test(expected = NullPointerException.class)
-  public void testBannedElementConstructor_nullElementName() {
-    new BannedElement(null);
+  public ProjectRepositoryException(Exception ex) {
+    super(ex);
   }
 
-  @Test(expected = NullPointerException.class)
-  public void testBannedElementConstructor_nullLocation() {
-    new BannedElement("test", null, 0);
+  public ProjectRepositoryException(String reason) {
+    super(reason);
   }
 
 }
-
