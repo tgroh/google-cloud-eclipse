@@ -18,13 +18,13 @@ package com.google.cloud.tools.eclipse.appengine.localserver.server;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.fail;
-import static org.mockito.Matchers.anyInt;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.eq;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.google.cloud.tools.eclipse.appengine.localserver.server.LocalAppEngineServerBehaviour.PortProber;
+import com.google.common.base.Predicate;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.wst.server.core.IServer;
 import org.junit.Before;
@@ -35,139 +35,77 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
 public class LocalAppEngineServerBehaviourTest {
+  @Mock
+  private Predicate<Integer> alwaysTrue;
+  @Mock
+  private Predicate<Integer> alwaysFalse;
+  @Mock
+  private Predicate<Integer> portProber;
 
+  @Mock
+  private IServer server;
   private LocalAppEngineServerBehaviour serverBehavior = new LocalAppEngineServerBehaviour();
-  @Mock private PortProber portProber;
-  @Mock private IServer server;
 
   @Before
   public void setUp() {
-    when(server.getAttribute(eq("appEngineDevServerAdminPort"), eq(8000))).thenReturn(8000);
-    when(server.getAttribute(eq("appEngineDevServerAdminPort"), anyString())).thenReturn(null);
-  }
-
-  private void setUpServerPortAttribute(int serverPort) {
-    when(server.getAttribute(eq("appEngineDevServerPort"), anyInt())).thenReturn(serverPort);
-    when(server.getAttribute(eq("appEngineDevServerPort"), anyString()))
-        .thenReturn(String.valueOf(serverPort));
-  }
-
-  private void setUpAdminPortAttribute(int adminPort) {
-    when(server.getAttribute(eq("appEngineDevServerAdminPort"), anyInt())).thenReturn(adminPort);
-    when(server.getAttribute(eq("appEngineDevServerAdminPort"), anyString()))
-        .thenReturn(String.valueOf(adminPort));
+    when(alwaysTrue.apply(any(Integer.class))).thenReturn(true);
+    when(alwaysFalse.apply(any(Integer.class))).thenReturn(false);
   }
 
   @Test
-  public void testCheckAndSetPorts() throws CoreException {
-    setUpServerPortAttribute(65535);
-    setUpAdminPortAttribute(8000);
-    serverBehavior.checkAndSetPorts(server, portProber);
-
-    assertEquals(65535, serverBehavior.getServerPort());
-    assertEquals(8000, serverBehavior.adminPort);
+  public void testCheckPort_nullWith0Default() throws CoreException {
+    LocalAppEngineServerBehaviour.checkPort(null, 0, portProber);
+    verify(portProber, never()).apply(any(Integer.class));
   }
 
   @Test
-  public void testCheckAndSetPorts_portZero() throws CoreException {
-    setUpServerPortAttribute(0);
-    setUpAdminPortAttribute(0);
-    serverBehavior.checkAndSetPorts(server, portProber);
-
-    assertEquals(0, serverBehavior.getServerPort());
-    assertEquals(0, serverBehavior.adminPort);
+  public void testCheckPort_nullWithNotInUseDefault() throws CoreException {
+    LocalAppEngineServerBehaviour.checkPort(null, 1, alwaysFalse);
+    verify(alwaysFalse, times(1)).apply(any(Integer.class));
   }
 
   @Test
-  public void testCheckAndSetPorts_adminPortAttributeNotSet() throws CoreException {
-    setUpServerPortAttribute(9800);
-    serverBehavior.checkAndSetPorts(server, portProber);
-
-    assertEquals(8000, serverBehavior.adminPort);
-  }
-
-  @Test
-  public void testCheckAndSetPorts_negativeServerPort() {
+  public void testCheckPort_nullWithInUseDefault() throws CoreException {
     try {
-      setUpServerPortAttribute(-1);
-      setUpAdminPortAttribute(9000);
-      serverBehavior.checkAndSetPorts(server, portProber);
-      fail();
+      LocalAppEngineServerBehaviour.checkPort(null, 1, alwaysTrue);
     } catch (CoreException ex) {
-      assertEquals("Port must be between 0 and 65535.", ex.getMessage());
+      assertEquals("Port 1 is in use.", ex.getMessage());
+      verify(alwaysTrue, times(1)).apply(any(Integer.class));
     }
   }
 
   @Test
-  public void testCheckAndSetPorts_negativeAdminPort() {
-    try {
-      setUpServerPortAttribute(9080);
-      setUpAdminPortAttribute(-1);
-      serverBehavior.checkAndSetPorts(server, portProber);
-      fail();
-    } catch (CoreException ex) {
-      assertEquals("Port must be between 0 and 65535.", ex.getMessage());
-    }
+  public void testCheckPort_0portWith0Default() throws CoreException {
+    LocalAppEngineServerBehaviour.checkPort(0, 0, portProber);
+    verify(portProber, never()).apply(any(Integer.class));
   }
 
   @Test
-  public void testCheckAndSetPorts_outOfBoundServerPort() {
-    try {
-      setUpServerPortAttribute(65536);
-      setUpAdminPortAttribute(9000);
-      serverBehavior.checkAndSetPorts(server, portProber);
-      fail();
-    } catch (CoreException ex) {
-      assertEquals("Port must be between 0 and 65535.", ex.getMessage());
-    }
+  public void testCheckPort_portWithNotInUse() throws CoreException {
+    LocalAppEngineServerBehaviour.checkPort(65535, 1, alwaysFalse);
+    verify(alwaysFalse, times(1)).apply(any(Integer.class));
   }
 
   @Test
-  public void testCheckAndSetPorts_outOfBoundAdminPort() {
+  public void testCheckPort_portWithInUse() throws CoreException {
     try {
-      setUpServerPortAttribute(9080);
-      setUpAdminPortAttribute(65536);
-      serverBehavior.checkAndSetPorts(server, portProber);
-      fail();
-    } catch (CoreException ex) {
-      assertEquals("Port must be between 0 and 65535.", ex.getMessage());
-    }
-  }
-
-  @Test
-  public void testCheckAndSetPorts_serverPortInUse() {
-    try {
-      when(portProber.isPortInUse(65535)).thenReturn(true);
-      setUpServerPortAttribute(65535);
-      setUpAdminPortAttribute(9000);
-      serverBehavior.checkAndSetPorts(server, portProber);
-      fail();
+      LocalAppEngineServerBehaviour.checkPort(65535, 1, alwaysTrue);
     } catch (CoreException ex) {
       assertEquals("Port 65535 is in use.", ex.getMessage());
+      verify(alwaysTrue, times(1)).apply(any(Integer.class));
     }
   }
 
   @Test
-  public void testCheckAndSetPorts_adminPortNotSetAndPortInuse() throws CoreException {
-    when(portProber.isPortInUse(8000)).thenReturn(true);
-    setUpServerPortAttribute(9080);
-    serverBehavior.checkAndSetPorts(server, portProber);
-    assertEquals(9080, serverBehavior.getServerPort());
-    assertEquals(0, serverBehavior.adminPort);
-  }
-
-  @Test
-  public void testCheckAndSetPorts_adminPortSetAndPortInUse() {
+  public void testCheckPort_portOutOfBounds() throws CoreException {
     try {
-      when(portProber.isPortInUse(65535)).thenReturn(true);
-      setUpServerPortAttribute(9080);
-      setUpAdminPortAttribute(65535);
-      serverBehavior.checkAndSetPorts(server, portProber);
-      fail();
+    LocalAppEngineServerBehaviour.checkPort(-1, 1, portProber);
     } catch (CoreException ex) {
-      assertEquals("Port 65535 is in use.", ex.getMessage());
+      assertEquals("Port must be between 0 and 65535.", ex.getMessage());
+      verify(portProber, never()).apply(any(Integer.class));
     }
   }
+
 
   private static final String[] serverOutputWithDefaultModule1 = new String[] {
       "WARNING  2016-11-03 21:11:21,930 devappserver2.py:785] DEFAULT_VERSION_HOSTNAME will not be set correctly with --port=0",
@@ -199,27 +137,21 @@ public class LocalAppEngineServerBehaviourTest {
 
   @Test
   public void testExtractServerPortFromOutput_firstModuleIsDefault() throws CoreException {
-    setUpServerPortAttribute(0);
-    serverBehavior.checkAndSetPorts(server, portProber);
-
+    setUpServerPort(0);
     simulateOutputParsing(serverOutputWithDefaultModule1);
     assertEquals(55948, serverBehavior.getServerPort());
   }
 
   @Test
   public void testExtractServerPortFromOutput_secondModuleIsDefault() throws CoreException {
-    setUpServerPortAttribute(0);
-    serverBehavior.checkAndSetPorts(server, portProber);
-
+    setUpServerPort(0);
     simulateOutputParsing(serverOutputWithDefaultModule2);
     assertEquals(8081, serverBehavior.getServerPort());
   }
 
   @Test
   public void testExtractServerPortFromOutput_noDefaultModule() throws CoreException {
-    setUpServerPortAttribute(0);
-    serverBehavior.checkAndSetPorts(server, portProber);
-
+    setUpServerPort(0);
     simulateOutputParsing(serverOutputWithNoDefaultModule);
     assertEquals(8181, serverBehavior.getServerPort());
   }
@@ -227,16 +159,13 @@ public class LocalAppEngineServerBehaviourTest {
   @Test
   public void testExtractServerPortFromOutput_defaultModuleDoesNotOverrideUserSpecifiedPort()
       throws CoreException {
-    setUpServerPortAttribute(12345);
-    serverBehavior.checkAndSetPorts(server, portProber);
-
+    setUpServerPort(12345);
     simulateOutputParsing(serverOutputWithDefaultModule1);
     assertEquals(12345, serverBehavior.getServerPort());
   }
 
   @Test
   public void testExtractModuleUrlFromOutput_firstModuleIsDefault() throws CoreException {
-    serverBehavior.checkAndSetPorts(server, portProber);
     simulateOutputParsing(serverOutputWithDefaultModule1);
     assertEquals("http://localhost:55948", serverBehavior.getServiceUrl("default"));
     assertEquals("http://localhost:8081", serverBehavior.getServiceUrl("second"));
@@ -244,7 +173,6 @@ public class LocalAppEngineServerBehaviourTest {
 
   @Test
   public void testExtractModuleUrlFromOutput_noDefaultModule() throws CoreException {
-    serverBehavior.checkAndSetPorts(server, portProber);
     simulateOutputParsing(serverOutputWithNoDefaultModule);
     assertNull(serverBehavior.getServiceUrl("default"));
     assertEquals("http://localhost:8181", serverBehavior.getServiceUrl("first"));
@@ -254,13 +182,18 @@ public class LocalAppEngineServerBehaviourTest {
 
   @Test
   public void testExtractAdminPortFromOutput() throws CoreException {
-    when(portProber.isPortInUse(8000)).thenReturn(true);
-    setUpServerPortAttribute(9080);
-    setUpAdminPortAttribute(0);
-    serverBehavior.checkAndSetPorts(server, portProber);
-
+    setUpServerPort(9080);
+    setUpAdminPort(0);
     simulateOutputParsing(serverOutputWithDefaultModule1);
     assertEquals(43679, serverBehavior.adminPort);
+  }
+
+  private void setUpServerPort(int port) {
+    serverBehavior.serverPort = port;
+  }
+
+  private void setUpAdminPort(int port) {
+    serverBehavior.adminPort = port;
   }
 
   private void simulateOutputParsing(String[] output) {

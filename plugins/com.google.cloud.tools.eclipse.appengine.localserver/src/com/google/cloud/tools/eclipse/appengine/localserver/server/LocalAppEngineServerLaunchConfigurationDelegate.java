@@ -16,6 +16,8 @@
 
 package com.google.cloud.tools.eclipse.appengine.localserver.server;
 
+import com.google.cloud.tools.appengine.api.devserver.DefaultRunConfiguration;
+import com.google.cloud.tools.appengine.api.devserver.RunConfiguration;
 import com.google.cloud.tools.appengine.cloudsdk.CloudSdk;
 import com.google.cloud.tools.appengine.cloudsdk.CloudSdkNotFoundException;
 import com.google.cloud.tools.appengine.cloudsdk.CloudSdkOutOfDateException;
@@ -76,6 +78,15 @@ public class LocalAppEngineServerLaunchConfigurationDelegate
 
   private static final String DEBUGGER_HOST = "localhost"; //$NON-NLS-1$
 
+  /**
+   * Returns {@code value} unless it's null or empty, then returns {@code nullOrEmptyValue}.
+   * 
+   * @see Strings#isNullOrEmpty(String)
+   */
+  private static String ifEmptyOrNull(String value, String nullOrEmptyValue) {
+    return !Strings.isNullOrEmpty(value) ? value : nullOrEmptyValue;
+  }
+
   private static void validateCloudSdk() throws CoreException  {
     try {
       CloudSdk cloudSdk = new CloudSdk.Builder().build();
@@ -95,64 +106,136 @@ public class LocalAppEngineServerLaunchConfigurationDelegate
 
   @Override
   public ILaunch getLaunch(ILaunchConfiguration configuration, String mode) throws CoreException {
-    IServer server1 = ServerUtil.getServer(configuration);
+    IServer thisServer = ServerUtil.getServer(configuration);
+    DefaultRunConfiguration thisConfig = generateServerRunConfiguration(configuration, thisServer);
+
     for (ILaunch launch : getLaunchManager().getLaunches()) {
-      if (!launch.isTerminated()
-          && launch.getLaunchConfiguration().getType() == configuration.getType()) {
-        IServer server2 = ServerUtil.getServer(launch.getLaunchConfiguration());
-        checkConflict(server1, server2);
+      if (launch.isTerminated()
+          || launch.getLaunchConfiguration().getType() != configuration.getType()) {
+        continue;
+      }
+      IServer otherServer = ServerUtil.getServer(launch.getLaunchConfiguration());
+      DefaultRunConfiguration otherConfig =
+          generateServerRunConfiguration(launch.getLaunchConfiguration(), otherServer);
+      IStatus conflicts = checkConflicts(thisConfig, otherConfig,
+          new MultiStatus(Activator.PLUGIN_ID, 0,
+              MessageFormat.format("Conflicts with running server \"{0}\"", otherServer.getName()),
+              null));
+      if (!conflicts.isOK()) {
+        throw new CoreException(StatusUtil.filter(conflicts));
       }
     }
     return super.getLaunch(configuration, mode);
   }
 
   /**
-   * Check for known conflicting settings.
-   * 
-   * @throws CoreException if a conflict is found; the message is reportable
+   * Create a CloudSdk RunConfiguration corresponding to the launch configuration and server
+   * defaults.
    */
-  private static void checkConflict(IServer server1, IServer server2) throws CoreException {
-    MultiStatus status = new MultiStatus(Activator.PLUGIN_ID, 0,
-        MessageFormat.format("Conflicts with running server \"{0}\"", server2.getName()),
-        null);
-    // use {0,number,#} to avoid localized port numbers
-    status.add(compareServerAttribute("server port: {0,number,#}",
-        LocalAppEngineServerBehaviour.SERVER_PORT_ATTRIBUTE_NAME,
-        LocalAppEngineServerBehaviour.DEFAULT_SERVER_PORT, server1, server2));
-    status.add(compareServerAttribute("admin port: {0,number,#}",
-        LocalAppEngineServerBehaviour.ADMIN_PORT_ATTRIBUTE_NAME,
-        LocalAppEngineServerBehaviour.DEFAULT_ADMIN_PORT, server1, server2));
+  @VisibleForTesting
+  DefaultRunConfiguration generateServerRunConfiguration(ILaunchConfiguration configuration,
+      IServer server) throws CoreException {
 
-    // Check the general storage path: other storages fall under here
+    DefaultRunConfiguration devServerRunConfiguration = new DefaultRunConfiguration();
+    // Iterate through our different configurable parameters
+    // TODO: storage-related paths, incl storage_path and the {blob,data,*search*,logs} paths
+
+    // TODO: allow setting host from launch config
+    if (server.getHost() != null) {
+      devServerRunConfiguration.setHost(server.getHost());
+    }
+
+    // TODO: make this a configurable option in the launch config?
+    // default to 1 instance to simplify debugging
+    devServerRunConfiguration.setMaxModuleInstances(1);
+
+    // don't restart server when on-disk changes detected
+    devServerRunConfiguration.setAutomaticRestart(false);
+
+
+    int serverPort = getPortAttribute(LocalAppEngineServerBehaviour.SERVER_PORT_ATTRIBUTE_NAME,
+        LocalAppEngineServerBehaviour.DEFAULT_SERVER_PORT, configuration, server);
+    if (serverPort >= 0) {
+      devServerRunConfiguration.setPort(serverPort);
+    }
+
+    int adminPort =
+        configuration.getAttribute(LocalAppEngineServerBehaviour.ADMIN_PORT_ATTRIBUTE_NAME, -1);
+    if (adminPort < 0) {
+      adminPort = server.getAttribute(LocalAppEngineServerBehaviour.ADMIN_PORT_ATTRIBUTE_NAME,
+          LocalAppEngineServerBehaviour.DEFAULT_ADMIN_PORT);
+    }
+    if (adminPort >= 0) {
+      devServerRunConfiguration.setAdminPort(adminPort);
+    }
+
+    // vmArguments is exactly as supplied by the user in the dialog box
+    String vmArgumentString = getVMArguments(configuration);
+    List<String> vmArguments = Arrays.asList(DebugPlugin.parseArguments(vmArgumentString));
+    if (!vmArguments.isEmpty()) {
+      devServerRunConfiguration.setJvmFlags(vmArguments);
+    }
+
+    return devServerRunConfiguration;
+  }
+
+  @VisibleForTesting
+  static int getPortAttribute(String attributeName, int defaultPort,
+      ILaunchConfiguration configuration, IServer server) {
+    int port = -1;
+    try {
+      port = configuration.getAttribute(attributeName, -1);
+    } catch (CoreException ex) {
+      logger.log(Level.WARNING, "Unable to retrieve " + attributeName, ex);
+    }
+    if (port < 0) {
+      port = server.getAttribute(attributeName, defaultPort);
+    }
+    return port;
+  }
+
+  /**
+   * Check for known conflicting settings.
+   */
+  private static IStatus checkConflicts(RunConfiguration ours, RunConfiguration theirs,
+      MultiStatus status) throws CoreException {
+    Class<?> clazz = LocalAppEngineServerLaunchConfigurationDelegate.class;
+    // use {0,number,#} to avoid localized port numbers
+    if (equalPorts(ours.getPort(), theirs.getPort(),
+        LocalAppEngineServerBehaviour.DEFAULT_SERVER_PORT)) {
+      status.add(StatusUtil.error(clazz,
+          MessageFormat.format("server port: {0,number,#}", ours.getPort())));
+    }
+    if (equalPorts(ours.getAdminPort(), theirs.getAdminPort(),
+        LocalAppEngineServerBehaviour.DEFAULT_ADMIN_PORT)) {
+      status.add(StatusUtil.error(clazz,
+          MessageFormat.format("admin port: {0,number,#}", ours.getAdminPort())));
+    }
+    if (equalPorts(ours.getApiPort(), theirs.getApiPort(), 0)) {
+      status.add(StatusUtil.error(clazz,
+          MessageFormat.format("API port: {0,number,#}", ours.getAdminPort())));
+    }
+
+    // Check the storage paths:
+    // TODO: include the APP_ID as it is used to generate the default storage path
     // XXX: does it matter if storage_path is same if all other paths are explicitly specified
     // (e.g., the {blob,data,*search*,logs} paths)
-    status.add(compareServerAttribute("storage location: {0}", "appEngineDevStorage", "default",
-        server1, server2));
-
-    if (!status.isOK()) {
-      throw new CoreException(StatusUtil.filter(status));
+    if (Objects.equals(ours.getStoragePath(), theirs.getStoragePath())) {
+      status.add(StatusUtil.error(clazz, MessageFormat.format("storage path: {0}",
+          ifEmptyOrNull(ours.getStoragePath(), "<default location>"))));
     }
+
+    return status;
   }
 
-
-  private static IStatus compareServerAttribute(String format, String attributeName,
-      int defaultValue, IServer server1, IServer server2) {
-    int value1 = server1.getAttribute(attributeName, defaultValue);
-    int value2 = server2.getAttribute(attributeName, defaultValue);
-    return value1 != value2 ? Status.OK_STATUS :
-          StatusUtil.error(LocalAppEngineServerLaunchConfigurationDelegate.class,
-            MessageFormat.format(format, value1));
+  /** Compare whether two port specs map to the same port. */
+  @VisibleForTesting
+  static boolean equalPorts(Integer ours, Integer theirs, int defaultValue) {
+    if (ours == null && theirs == null) {
+      return defaultValue != 0;
+    }
+    return Objects.equals(ours, theirs);
   }
-
-  private static IStatus compareServerAttribute(String format, String attributeName,
-      String defaultValue, IServer server1, IServer server2) throws CoreException {
-    String value1 = server1.getAttribute(attributeName, defaultValue);
-    String value2 = server2.getAttribute(attributeName, defaultValue);
-    return !Objects.equals(value1, value2) ? Status.OK_STATUS
-        : StatusUtil.error(LocalAppEngineServerLaunchConfigurationDelegate.class,
-            MessageFormat.format(format, value1));
-  }
-
 
   @Override
   public void launch(ILaunchConfiguration configuration, String mode, final ILaunch launch,
@@ -177,6 +260,7 @@ public class LocalAppEngineServerLaunchConfigurationDelegate
       return;
     }
 
+
     LocalAppEngineServerBehaviour serverBehaviour = (LocalAppEngineServerBehaviour) server
         .loadAdapter(LocalAppEngineServerBehaviour.class, null);
 
@@ -200,19 +284,18 @@ public class LocalAppEngineServerLaunchConfigurationDelegate
     if (!Strings.isNullOrEmpty(getProgramArguments(configuration))) {
       logger.warning("App Engine Local Server currently ignores program arguments");
     }
-    // vmArguments is exactly as supplied by the user in the dialog box
-    String vmArgumentString = getVMArguments(configuration);
-    List<String> vmArguments = Arrays.asList(DebugPlugin.parseArguments(vmArgumentString));
+    DefaultRunConfiguration devServerRunConfiguration =
+        generateServerRunConfiguration(configuration, server);
+    devServerRunConfiguration.setAppYamls(runnables);
 
     if (ILaunchManager.DEBUG_MODE.equals(mode)) {
       int debugPort = getDebugPort();
-      setupDebugTarget(launch, debugPort, monitor);
-      serverBehaviour.startDebugDevServer(runnables, console.newMessageStream(), debugPort, vmArguments);
+      setupDebugTarget(devServerRunConfiguration, launch, debugPort, monitor);
     } else {
       // A launch must have at least one debug target or process, or it otherwise becomes a zombie
       LocalAppEngineServerDebugTarget.addTarget(launch, serverBehaviour);
-      serverBehaviour.startDevServer(runnables, console.newMessageStream(), vmArguments);
     }
+    serverBehaviour.startDevServer(devServerRunConfiguration, console.newMessageStream());
   }
 
   /**
@@ -229,8 +312,20 @@ public class LocalAppEngineServerLaunchConfigurationDelegate
     WorkbenchUtil.openInBrowserInUiThread(pageLocation, server.getId(), server.getName(), server.getName());
   }
 
-  private void setupDebugTarget(ILaunch launch, int port,
-      IProgressMonitor monitor) throws CoreException {
+  private void setupDebugTarget(DefaultRunConfiguration devServerRunConfiguration, ILaunch launch,
+      int debugPort, IProgressMonitor monitor) throws CoreException {
+    if (debugPort <= 0 || debugPort > 65535) {
+      throw new IllegalArgumentException("Debug port is set to " + debugPort //$NON-NLS-1$
+          + ", should be between 1-65535"); //$NON-NLS-1$
+    }
+    List<String> jvmFlags = new ArrayList<>();
+    if (devServerRunConfiguration.getJvmFlags() != null) {
+      jvmFlags.addAll(devServerRunConfiguration.getJvmFlags());
+    }
+    jvmFlags.add("-Xdebug"); //$NON-NLS-1$
+    jvmFlags.add("-Xrunjdwp:transport=dt_socket,server=n,suspend=y,quiet=y,address=" + debugPort); //$NON-NLS-1$
+    devServerRunConfiguration.setJvmFlags(jvmFlags);
+
     // The 4.7 listen connector supports a connectionLimit
     IVMConnector connector =
         JavaRuntime.getVMConnector(IJavaLaunchConfigurationConstants.ID_SOCKET_LISTEN_VM_CONNECTOR);
@@ -249,7 +344,7 @@ public class LocalAppEngineServerLaunchConfigurationDelegate
     int timeout = JavaRuntime.getPreferences().getInt(JavaRuntime.PREF_CONNECT_TIMEOUT);
     Map<String, String> connectionParameters = new HashMap<>();
     connectionParameters.put("hostname", DEBUGGER_HOST); //$NON-NLS-1$
-    connectionParameters.put("port", Integer.toString(port)); //$NON-NLS-1$
+    connectionParameters.put("port", Integer.toString(debugPort)); //$NON-NLS-1$
     connectionParameters.put("timeout", Integer.toString(timeout)); //$NON-NLS-1$
     connectionParameters.put("connectionLimit", "0"); //$NON-NLS-1$ //$NON-NLS-2$
     connector.connect(connectionParameters, monitor, launch);
