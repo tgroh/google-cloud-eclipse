@@ -53,7 +53,7 @@ public class ToServlet25QuickFixTest {
   }
   
   @Test
-  public void testRemoveApplicationElements() throws IOException, ParserConfigurationException,
+  public void testConvertServlet() throws IOException, ParserConfigurationException,
       SAXException, TransformerException, CoreException {
 
     IProject project = projectCreator.getProject();

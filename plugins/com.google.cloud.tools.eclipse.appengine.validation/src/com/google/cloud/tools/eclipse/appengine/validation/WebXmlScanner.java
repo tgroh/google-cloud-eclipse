@@ -34,7 +34,7 @@ class WebXmlScanner extends AbstractScanner {
         Locator2 locator = getLocator();
         DocumentLocation start = new DocumentLocation(locator.getLineNumber(),
             locator.getColumnNumber());
-        addToBlacklist(new BannedElement(Messages.getString("web.xml.version"), start, 1));
+        addToBlacklist(new BannedElement(Messages.getString("web.xml.version"), start, 0));
       }
     }
   }
