@@ -6,7 +6,7 @@
 	xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
 
   <xsl:template match="node()|@*">
-    <xsl:copy copy-namespaces="no">
+    <xsl:copy>
       <xsl:apply-templates select="node()|@*"/>
     </xsl:copy>
   </xsl:template>
@@ -21,18 +21,18 @@
     </web-app>
   </xsl:template>
   
-  <xsl:variable name="webNs" select=
-      "document('')/*/namespace::web"/>
+  <xsl:variable name="ns" select=
+      "document('')/*/namespace"/>
  
   <xsl:template match="*">
     <xsl:choose>
-      <xsl:when test="namespace-uri()=$webNs">
+      <xsl:when test="namespace-uri()=$ns">
         <xsl:element name="{name()}" namespace="{namespace-uri()}">
           <xsl:apply-templates select="@*|node()"/>
         </xsl:element>
       </xsl:when>
       <xsl:otherwise>
-        <xsl:element name="{name()}" namespace="{$webNs}">
+        <xsl:element name="{name()}" namespace="{$ns}">
           <xsl:apply-templates select="@*|node()"/>
         </xsl:element>
       </xsl:otherwise>

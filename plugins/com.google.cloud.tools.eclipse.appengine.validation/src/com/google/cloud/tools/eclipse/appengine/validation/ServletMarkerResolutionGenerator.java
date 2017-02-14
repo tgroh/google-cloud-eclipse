@@ -29,7 +29,7 @@ public class ServletMarkerResolutionGenerator implements IMarkerResolutionGenera
   @Override
   public IMarkerResolution[] getResolutions(IMarker marker) {
     IMarkerResolution[] markerResolutions = new IMarkerResolution[1];
-    IMarkerResolution fix = new WebXmlQuickFix();
+    IMarkerResolution fix = new ToServlet25QuickFix();
     markerResolutions[0] = fix;
     return markerResolutions;
   }

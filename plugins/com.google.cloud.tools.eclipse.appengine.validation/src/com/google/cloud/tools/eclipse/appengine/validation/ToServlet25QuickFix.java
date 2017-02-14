@@ -30,10 +30,10 @@ import com.google.cloud.tools.eclipse.util.Xslt;
 /**
  * Replaces web.xml <web-app> element with servlet 2.5 deployment descriptor.
  */
-public class WebXmlQuickFix implements IMarkerResolution {
+public class ToServlet25QuickFix implements IMarkerResolution {
   
   private static final Logger logger = Logger.getLogger(
-      WebXmlQuickFix.class.getName());
+      ToServlet25QuickFix.class.getName());
 
   @Override
   public String getLabel() {
@@ -44,7 +44,7 @@ public class WebXmlQuickFix implements IMarkerResolution {
   public void run(IMarker marker) {
     try {
       IFile file = (IFile) marker.getResource();
-      URL xslPath = WebXmlQuickFix.class.getResource("/xslt/servlet.xsl");
+      URL xslPath = ToServlet25QuickFix.class.getResource("/xslt/servlet.xsl");
       Xslt.transformInPlace(file, xslPath);
     } catch (IOException | CoreException| TransformerException ex) {
       logger.log(Level.SEVERE, ex.getMessage());

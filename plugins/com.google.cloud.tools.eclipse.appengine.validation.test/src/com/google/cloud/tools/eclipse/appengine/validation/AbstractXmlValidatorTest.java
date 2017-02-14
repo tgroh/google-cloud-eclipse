@@ -38,8 +38,8 @@ import com.google.cloud.tools.eclipse.test.util.project.TestProjectCreator;
 
 public class AbstractXmlValidatorTest {
 
-  private static final String ELEMENT_MESSAGE = "Project ID should be specified at deploy time.";
-  private static final String SERVLET_MARKER = "com.google.cloud.tools.eclipse.appengine.validation.servletMarker";
+  private final String ELEMENT_MESSAGE = "Project ID should be specified at deploy time.";
+  private final String SERVLET_MARKER = "com.google.cloud.tools.eclipse.appengine.validation.servletMarker";
   private static IResource resource;
   private static IProject project;
   

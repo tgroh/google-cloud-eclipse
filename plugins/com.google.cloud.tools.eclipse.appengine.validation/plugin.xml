@@ -24,11 +24,12 @@
   </extension>
   
   <extension 
-      name="App Engine Web Xml Validator" 
+      name="%appengine.web"
       point="org.eclipse.wst.validation.validatorV2" 
       id="appEngineWebXmlValidator">
     <validator
-    	class="com.google.cloud.tools.eclipse.appengine.validation.AppEngineWebXmlValidator">
+    	class="com.google.cloud.tools.eclipse.appengine.validation.AppEngineWebXmlValidator"
+      	markerId="com.google.cloud.tools.eclipse.appengine.validation.blacklistMarker">
       <include>
         <rules>
           <file type="file" name="appengine-web.xml"/>
@@ -39,7 +40,7 @@
   
   <extension
       id="blacklistMarker"
-      name="Blacklist Marker"
+      name="%blacklist.marker"
       point="org.eclipse.core.resources.markers">
     <super type="org.eclipse.jdt.core.problem" />
     <super type="org.eclipse.core.resources.problemmarker" />
@@ -56,11 +57,12 @@
   </extension>
   
     <extension 
-      name="Web Xml Validator" 
+      name="%web.xml"
       point="org.eclipse.wst.validation.validatorV2" 
       id="webXmlValidator">
     <validator
-    	class="com.google.cloud.tools.eclipse.appengine.validation.WebXmlValidator">
+    	class="com.google.cloud.tools.eclipse.appengine.validation.WebXmlValidator"
+    	markerId="com.google.cloud.tools.eclipse.appengine.validation.servletMarker">
       <include>
         <rules>
           <file type="file" name="web.xml"/>
@@ -71,7 +73,7 @@
   
   <extension
       id="servletMarker"
-      name="servlet Marker"
+      name="%servlet.marker"
       point="org.eclipse.core.resources.markers">
     <super type="org.eclipse.jdt.core.problem" />
     <super type="org.eclipse.core.resources.problemmarker" />

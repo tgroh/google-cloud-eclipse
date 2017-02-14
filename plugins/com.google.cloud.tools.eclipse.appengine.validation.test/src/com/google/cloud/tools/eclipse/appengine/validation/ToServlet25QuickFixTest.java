@@ -41,15 +41,15 @@ import com.google.cloud.tools.eclipse.test.util.project.TestProjectCreator;
 /**
  * Must be run as a plugin test.
  */
-public class WebXmlQuickFixTest {
+public class ToServlet25QuickFixTest {
     
   @Rule public TestProjectCreator projectCreator = new TestProjectCreator();
 
-  private WebXmlQuickFix fix = new WebXmlQuickFix();
+  private ToServlet25QuickFix fix = new ToServlet25QuickFix();
 
   @Test 
   public void testGetLabel() {
-    assertEquals("Replace web-app version", fix.getLabel());
+    assertEquals("Convert to Java Servlet API 2.5", fix.getLabel());
   }
   
   @Test
