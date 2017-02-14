@@ -24,11 +24,9 @@ import org.xml.sax.SAXException;
 import org.xml.sax.ext.Locator2Impl;
 import org.xml.sax.helpers.AttributesImpl;
 
-public class BlacklistScannerTest {
-  
-  private static final String ELEMENT_MESSAGE = "Project ID should be specified at deploy time.";
+public class WebXmlScannerTest {
 
-  private BlacklistScanner scanner = new BlacklistScanner();
+  private WebXmlScanner scanner = new WebXmlScanner();
   
   @Before
   public void setUp() throws SAXException {
@@ -38,10 +36,13 @@ public class BlacklistScannerTest {
   
   @Test
   public void testStartElement() throws SAXException {
-    scanner.startElement("", "", "application", new AttributesImpl());
+    AttributesImpl attributes = new AttributesImpl();
+    attributes.addAttribute("", "", "version", "", "3.1");
+    scanner.startElement("", "web-app", "", attributes);
     assertEquals(1, scanner.getBlacklist().size());
     String message = scanner.getBlacklist().peek().getMessage();
-    assertEquals(ELEMENT_MESSAGE, message);
+    String expectedMessage = "App Engine Standard does not support this servlet version.";
+    assertEquals(expectedMessage, message);
   }
   
 }

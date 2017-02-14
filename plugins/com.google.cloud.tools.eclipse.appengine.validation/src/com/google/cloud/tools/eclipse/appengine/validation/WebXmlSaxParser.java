@@ -16,33 +16,31 @@
 
 package com.google.cloud.tools.eclipse.appengine.validation;
 
-import static org.junit.Assert.assertEquals;
-
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.util.Queue;
 import javax.xml.parsers.ParserConfigurationException;
-import org.junit.Test;
+import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
+import org.xml.sax.XMLReader;
+import org.xml.sax.helpers.XMLReaderFactory;
 
-public class BlacklistSaxParserTest {
+
+class WebXmlSaxParser {
   
-  @Test
-  public void testReadXml_emptyXml()
+  static SaxParserResults readXml(byte[] bytes)
       throws ParserConfigurationException, IOException, SAXException {
-    String emptyXml = "";
-    byte[] bytes = emptyXml.getBytes(StandardCharsets.UTF_8);
-    assert(BlacklistSaxParser.readXml(bytes).getBlacklist().isEmpty());
+    if (bytes.length == 0) { //file is empty
+      return new SaxParserResults();
+    }
+    ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
+    InputSource is = new InputSource(bais);
+    XMLReader reader = XMLReaderFactory.createXMLReader();
+    WebXmlScanner handler = new WebXmlScanner();
+    
+    reader.setContentHandler(handler);
+    reader.setErrorHandler(handler);
+    reader.parse(is);
+    return handler.getParserResults();
   }
   
-  @Test
-  public void testReadXml_xmlWithBannedElement()
-      throws ParserConfigurationException, IOException, SAXException {
-    String xml = "<application></application>";
-    byte[] bytes = xml.getBytes(StandardCharsets.UTF_8);
-    Queue<BannedElement> blacklist = BlacklistSaxParser.readXml(bytes).getBlacklist();
-    String message = "Project ID should be specified at deploy time.";
-    assertEquals(blacklist.poll().getMessage(), message);
-  }
-
 }

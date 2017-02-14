@@ -26,7 +26,6 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
-
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
@@ -42,21 +41,15 @@ import com.google.cloud.tools.eclipse.test.util.project.TestProjectCreator;
 /**
  * Must be run as a plugin test.
  */
-public class ApplicationQuickFixTest {
-  
-  private static final String APPLICATION_XML =
-      "<appengine-web-app xmlns='http://appengine.google.com/ns/1.0'>"
-      + "<application>"
-      + "</application>"
-      + "</appengine-web-app>";
+public class WebXmlQuickFixTest {
     
   @Rule public TestProjectCreator projectCreator = new TestProjectCreator();
 
-  private ApplicationQuickFix fix = new ApplicationQuickFix();
+  private WebXmlQuickFix fix = new WebXmlQuickFix();
 
   @Test 
   public void testGetLabel() {
-    assertEquals("Remove Application Element", fix.getLabel());
+    assertEquals("Replace web-app version", fix.getLabel());
   }
   
   @Test
@@ -65,7 +58,8 @@ public class ApplicationQuickFixTest {
 
     IProject project = projectCreator.getProject();
     IFile file = project.getFile("testdata.xml");
-    file.create(stringToInputStream(APPLICATION_XML), IFile.FORCE, null);
+    String webXml = "<web-app version='3.1'></web-app>";
+    file.create(stringToInputStream(webXml), IFile.FORCE, null);
     
     IMarker marker = Mockito.mock(IMarker.class);
     Mockito.when(marker.getResource()).thenReturn(file);
@@ -76,7 +70,7 @@ public class ApplicationQuickFixTest {
     builderFactory.setNamespaceAware(true);
     DocumentBuilder builder = builderFactory.newDocumentBuilder();
     Document transformed = builder.parse(file.getContents());
-    assertEquals(0, transformed.getDocumentElement().getChildNodes().getLength());
+    assertEquals("2.5", transformed.getDocumentElement().getAttribute("version"));
   }
   
   private static InputStream stringToInputStream(String string) {

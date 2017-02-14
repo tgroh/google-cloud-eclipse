@@ -21,22 +21,22 @@ import org.xml.sax.SAXException;
 import org.xml.sax.ext.Locator2;
 
 /**
- * Adds blacklisted start element to queue. Adding 2 to length accounts
- * for the start and end angle brackets of the tag.
+ * Adds <web-app> element to queue if the servlet version is not 2.5.
  */
-class BlacklistScanner extends AbstractScanner {
+class WebXmlScanner extends AbstractScanner {
 
   @Override
   public void startElement(String uri, String localName, String qName, Attributes attributes)
       throws SAXException {
-    Locator2 locator = getLocator();
-    if (AppEngineWebBlacklist.contains(qName)) {
-      DocumentLocation start = new DocumentLocation(locator.getLineNumber(),
-          locator.getColumnNumber() - qName.length() - 2);
-      String message = AppEngineWebBlacklist.getBlacklistElementMessage(qName);
-      BannedElement element = new BannedElement(message, start, qName.length() + 2);
-      addToBlacklist(element);
+    if (localName.equalsIgnoreCase("web-app")) {
+      String version = attributes.getValue("version");
+      if (!version.equals("2.5")) {
+        Locator2 locator = getLocator();
+        DocumentLocation start = new DocumentLocation(locator.getLineNumber(),
+            locator.getColumnNumber());
+        addToBlacklist(new BannedElement(Messages.getString("web.xml.version"), start, 1));
+      }
     }
   }
-    
+  
 }

@@ -28,23 +28,23 @@ import org.eclipse.ui.IMarkerResolution;
 import com.google.cloud.tools.eclipse.util.Xslt;
 
 /**
- * Applies application.xsl to appengine-web.xml to remove an <application/> element.
+ * Replaces web.xml <web-app> element with servlet 2.5 deployment descriptor.
  */
-public class ApplicationQuickFix implements IMarkerResolution {
+public class WebXmlQuickFix implements IMarkerResolution {
   
   private static final Logger logger = Logger.getLogger(
-      ApplicationQuickFix.class.getName());
+      WebXmlQuickFix.class.getName());
 
   @Override
   public String getLabel() {
-    return Messages.getString("remove.application.element");
+    return Messages.getString("replace.version");
   }
 
   @Override
   public void run(IMarker marker) {
     try {
       IFile file = (IFile) marker.getResource();
-      URL xslPath = ApplicationQuickFix.class.getResource("/xslt/application.xsl");
+      URL xslPath = WebXmlQuickFix.class.getResource("/xslt/servlet.xsl");
       Xslt.transformInPlace(file, xslPath);
     } catch (IOException | CoreException| TransformerException ex) {
       logger.log(Level.SEVERE, ex.getMessage());
