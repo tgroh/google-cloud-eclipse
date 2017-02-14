@@ -136,4 +136,8 @@ public class ProjectSelector extends Composite {
       tableViewer.reveal(selection.getFirstElement());
     }
   }
+
+  public void clearStatusLink() {
+    setStatusLink("");
+  }
 }
