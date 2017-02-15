@@ -39,7 +39,8 @@ import com.google.cloud.tools.eclipse.test.util.project.TestProjectCreator;
 
 public class WebXmlValidatorTest {
 
-  private static final String XML = "<web-app version='3.1'></web-app>";
+  private static final String XML = "<web-app xmlns='http://xmlns.jcp.org/xml/ns/javaee'"
+      + " version='3.1'></web-app>";
   private static final String ELEMENT_MESSAGE =
       "App Engine Standard does not support this servlet version.";
   private static final String SERVLET_MARKER =
@@ -67,7 +68,7 @@ public class WebXmlValidatorTest {
   }
 
   @Test
-  public void testValidate_withBannedElements()
+  public void testValidate_withWrongVersion()
       throws IOException, CoreException, ParserConfigurationException {
     byte[] bytes = XML.getBytes(StandardCharsets.UTF_8);
     WebXmlValidator validator = new WebXmlValidator();

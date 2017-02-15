@@ -28,7 +28,10 @@ class WebXmlScanner extends AbstractScanner {
   @Override
   public void startElement(String uri, String localName, String qName, Attributes attributes)
       throws SAXException {
-    if (localName.equalsIgnoreCase("web-app")) {
+    //Checks for expected namespace URI. Assume something else is going on if
+    //web.xml has an unexpected root namespace.
+    if (localName.equalsIgnoreCase("web-app") && (uri.equals("http://xmlns.jcp.org/xml/ns/javaee")
+        || uri.equals("http://java.sun.com/xml/ns/javaee"))) {
       String version = attributes.getValue("version");
       if (!version.equals("2.5")) {
         Locator2 locator = getLocator();

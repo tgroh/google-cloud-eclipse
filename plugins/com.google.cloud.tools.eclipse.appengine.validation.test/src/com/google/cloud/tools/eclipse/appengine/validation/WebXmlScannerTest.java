@@ -35,14 +35,33 @@ public class WebXmlScannerTest {
   }
   
   @Test
-  public void testStartElement() throws SAXException {
+  public void testStartElement_jcpNamespace() throws SAXException {
     AttributesImpl attributes = new AttributesImpl();
     attributes.addAttribute("", "", "version", "", "3.1");
-    scanner.startElement("", "web-app", "", attributes);
+    scanner.startElement("http://xmlns.jcp.org/xml/ns/javaee", "web-app", "", attributes);
     assertEquals(1, scanner.getBlacklist().size());
     String message = scanner.getBlacklist().peek().getMessage();
     String expectedMessage = "App Engine Standard does not support this servlet version.";
     assertEquals(expectedMessage, message);
+  }
+  
+  @Test
+  public void testStartElement_sunNamespace() throws SAXException {
+    AttributesImpl attributes = new AttributesImpl();
+    attributes.addAttribute("", "", "version", "", "3.0");
+    scanner.startElement("http://java.sun.com/xml/ns/javaee", "web-app", "", attributes);
+    assertEquals(1, scanner.getBlacklist().size());
+    String message = scanner.getBlacklist().peek().getMessage();
+    String expectedMessage = "App Engine Standard does not support this servlet version.";
+    assertEquals(expectedMessage, message);
+  }
+  
+  @Test
+  public void testStartElement_correctVersion() throws SAXException {
+    AttributesImpl attributes = new AttributesImpl();
+    attributes.addAttribute("", "", "version", "", "2.5");
+    scanner.startElement("http://java.sun.com/xml/ns/javaee", "web-app", "", attributes);
+    assertEquals(0, scanner.getBlacklist().size());
   }
   
 }
