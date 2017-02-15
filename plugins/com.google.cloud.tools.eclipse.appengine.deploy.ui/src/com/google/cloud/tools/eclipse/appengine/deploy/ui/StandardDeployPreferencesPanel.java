@@ -17,6 +17,7 @@
 package com.google.cloud.tools.eclipse.appengine.deploy.ui;
 
 import com.google.api.client.auth.oauth2.Credential;
+import com.google.cloud.tools.eclipse.appengine.deploy.ui.internal.ProjectSelectorSelectionChangedListener;
 import com.google.cloud.tools.eclipse.login.IGoogleLoginService;
 import com.google.cloud.tools.eclipse.login.ui.AccountSelector;
 import com.google.cloud.tools.eclipse.login.ui.AccountSelectorObservableValue;
@@ -57,9 +58,6 @@ import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.layout.GridLayoutFactory;
-import org.eclipse.jface.viewers.ISelectionChangedListener;
-import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.layout.GridData;
@@ -379,49 +377,6 @@ public class StandardDeployPreferencesPanel extends DeployPreferencesPanel {
                                              Messages.getString("projectselector.retrieveproject.error.title"),
                                              ex));
       return Collections.emptyList();
-    }
-  }
-
-  @VisibleForTesting
-  static final class ProjectSelectorSelectionChangedListener implements ISelectionChangedListener {
-
-    private AccountSelector accountSelector;
-    private ProjectRepository projectRepository;
-    private ProjectSelector projectSelector;
-
-    ProjectSelectorSelectionChangedListener(AccountSelector accountSelector,
-                                            ProjectRepository projectRepository,
-                                            ProjectSelector projectSelector) {
-      super();
-      this.accountSelector = accountSelector;
-      this.projectRepository = projectRepository;
-      this.projectSelector = projectSelector;
-    }
-
-    @Override
-    public void selectionChanged(SelectionChangedEvent event) {
-      IStructuredSelection selection = (IStructuredSelection) event.getSelection();
-      try {
-        if (!selection.isEmpty()) {
-          GcpProject project = (GcpProject) selection.getFirstElement();
-          Credential selectedCredential = accountSelector.getSelectedCredential();
-          String projectId = project.getId();
-          boolean hasAppEngineApplication =
-              projectRepository.hasAppEngineApplication(selectedCredential, projectId);
-          if (!hasAppEngineApplication) {
-            projectSelector.setStatusLink(
-                Messages.getString("projectselector.missing.appengine.application.link",
-                                   projectId));
-          } else {
-            projectSelector.clearStatusLink();
-          }
-        } else {
-          projectSelector.clearStatusLink();
-        }
-      } catch (ProjectRepositoryException ex) {
-        projectSelector.setStatusLink(Messages.getString("projectselector.retrieveapplication.error.message",
-                                                         ex.getLocalizedMessage()));
-      }
     }
   }
 
