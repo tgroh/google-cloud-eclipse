@@ -70,6 +70,22 @@ public class GcpProjectTest {
   }
 
   @Test
+  public void testEqualsItself() {
+    GcpProject gcpProject = new GcpProject("name", "id");
+    assertTrue(gcpProject.equals(gcpProject));
+  }
+
+  @Test
+  public void testEqualsWithNull() {
+    assertFalse(new GcpProject("name", "id").equals(null));
+  }
+
+  @Test
+  public void testEqualsWithOtherClass() {
+    assertFalse(new GcpProject("name", "id").equals(new Object()));
+  }
+
+  @Test
   public void testEqualsForSameNameSameId() {
     assertTrue(new GcpProject("name", "id").equals(new GcpProject("name", "id")));
   }
@@ -92,6 +108,11 @@ public class GcpProjectTest {
   @Test
   public void testEqualsForNullId() {
     assertTrue(new GcpProject("name", null).equals(new GcpProject("name", null)));
+  }
+
+  @Test
+  public void testEqualsForNullIdAndNonNullId() {
+    assertFalse(new GcpProject("name", null).equals(new GcpProject("name", "id")));
   }
 
   @Test

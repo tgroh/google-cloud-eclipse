@@ -29,14 +29,13 @@ import org.eclipse.jface.viewers.SelectionChangedEvent;
 
 public class ProjectSelectorSelectionChangedListener implements ISelectionChangedListener {
 
-  private AccountSelector accountSelector;
-  private ProjectRepository projectRepository;
-  private ProjectSelector projectSelector;
+  private final AccountSelector accountSelector;
+  private final ProjectRepository projectRepository;
+  private final ProjectSelector projectSelector;
 
   public ProjectSelectorSelectionChangedListener(AccountSelector accountSelector,
-                                          ProjectRepository projectRepository,
-                                          ProjectSelector projectSelector) {
-    super();
+                                                 ProjectRepository projectRepository,
+                                                 ProjectSelector projectSelector) {
     this.accountSelector = accountSelector;
     this.projectRepository = projectRepository;
     this.projectSelector = projectSelector;

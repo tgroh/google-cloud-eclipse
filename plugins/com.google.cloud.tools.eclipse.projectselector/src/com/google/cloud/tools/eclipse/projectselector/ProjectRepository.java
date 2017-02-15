@@ -19,19 +19,11 @@ package com.google.cloud.tools.eclipse.projectselector;
 import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.googleapis.json.GoogleJsonResponseException;
 import com.google.api.client.http.HttpStatusCodes;
-import com.google.api.client.http.HttpTransport;
-import com.google.api.client.http.javanet.NetHttpTransport;
-import com.google.api.client.json.JsonFactory;
-import com.google.api.client.json.jackson.JacksonFactory;
-import com.google.api.services.appengine.v1.Appengine;
-import com.google.api.services.appengine.v1.Appengine.Apps;
-import com.google.api.services.appengine.v1.model.Application;
-import com.google.api.services.cloudresourcemanager.CloudResourceManager;
 import com.google.api.services.cloudresourcemanager.CloudResourceManager.Projects;
 import com.google.api.services.cloudresourcemanager.model.ListProjectsResponse;
 import com.google.api.services.cloudresourcemanager.model.Project;
-import com.google.cloud.tools.eclipse.util.CloudToolsInfo;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -46,6 +38,12 @@ public class ProjectRepository {
   private static final int PROJECT_LIST_PAGESIZE = 300;
   private static final String PROJECT_DELETE_REQUESTED = "DELETE_REQUESTED";
 
+  private final GoogleApiFactory apiFactory;
+
+  public ProjectRepository(GoogleApiFactory apiFactory) {
+    this.apiFactory = apiFactory;
+  }
+
   /**
    * @return all active projects the account identified by {@code credential} has access to
    * @throws ProjectRepositoryException if an error happens while communicating with the backend
@@ -54,7 +52,7 @@ public class ProjectRepository {
     // TODO cache results https://github.com/GoogleCloudPlatform/google-cloud-eclipse/issues/1374 
     try {
       if (credential != null) {
-        Projects projects = getProjectsApi(credential);
+        Projects projects = apiFactory.getProjectsApi(credential);
         ListProjectsResponse execute =
             projects.list().setPageSize(PROJECT_LIST_PAGESIZE).execute();
         return convertToGcpProjects(execute.getProjects());
@@ -75,33 +73,13 @@ public class ProjectRepository {
       throws ProjectRepositoryException {
     try {
       if (credential != null && !Strings.isNullOrEmpty(projectId)) {
-        return convertToGcpProject(getProjectsApi(credential).get(projectId).execute());
+        return convertToGcpProject(apiFactory.getProjectsApi(credential).get(projectId).execute());
       } else {
         return null;
       }
     } catch (IOException ex) {
       throw new ProjectRepositoryException(ex);
     }
-  }
-
-  private static Projects getProjectsApi(Credential credential) {
-    JsonFactory jsonFactory = new JacksonFactory();
-    HttpTransport transport = new NetHttpTransport();
-    CloudResourceManager resourceManager =
-        new CloudResourceManager.Builder(transport, jsonFactory, credential)
-            .setApplicationName(CloudToolsInfo.USER_AGENT).build();
-    Projects projects = resourceManager.projects();
-    return projects;
-  }
-
-  private Apps getAppsApi(Credential credential) {
-    JsonFactory jsonFactory = new JacksonFactory();
-    HttpTransport transport = new NetHttpTransport();
-    Appengine appengine =
-        new Appengine.Builder(transport, jsonFactory, credential)
-            .setApplicationName(CloudToolsInfo.USER_AGENT).build();
-    Apps apps = appengine.apps();
-    return apps;
   }
 
   @VisibleForTesting
@@ -118,19 +96,23 @@ public class ProjectRepository {
   }
 
   private static GcpProject convertToGcpProject(Project project) {
+    Preconditions.checkNotNull(project);
     return new GcpProject(project.getName(), project.getProjectId());
   }
 
   /**
-   * @param credential
-   * @param id
-   * @return
-   * @throws ProjectRepositoryException 
+   * @return true if the credential has access to the GCP project identified by {@code projectId}
+   * and the project has App Engine application
+   * @throws ProjectRepositoryException if an error other than HTTP 404 happens while retrieving the
+   * App Engine application
    */
   public boolean hasAppEngineApplication(Credential credential, String projectId)
       throws ProjectRepositoryException {
+    Preconditions.checkNotNull(credential);
+    Preconditions.checkArgument(!Strings.isNullOrEmpty(projectId));
+
     try {
-      Application application = getAppsApi(credential).get(projectId).execute();
+      apiFactory.getAppsApi(credential).get(projectId).execute();
       return true;
     } catch (IOException ex) {
       if (ex instanceof GoogleJsonResponseException) {
@@ -142,5 +124,4 @@ public class ProjectRepository {
       throw new ProjectRepositoryException(ex);
     }
   }
-
 }

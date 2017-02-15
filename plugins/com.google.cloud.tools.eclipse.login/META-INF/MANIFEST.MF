@@ -29,6 +29,7 @@ Export-Package: com.google.api.client.auth.oauth2;x-friends:="com.google.cloud.t
  com.google.api.client.googleapis.json;x-friends:="com.google.cloud.tools.eclipse.projectselector",
  com.google.api.client.googleapis.services;x-friends:="com.google.cloud.tools.eclipse.projectselector",
  com.google.api.client.googleapis.services.json;x-friends:="com.google.cloud.tools.eclipse.projectselector",
+ com.google.api.client.googleapis.testing.json;x-friends:="com.google.cloud.tools.eclipse.projectselector",
  com.google.api.client.http;x-friends:="com.google.cloud.tools.eclipse.projectselector",
  com.google.api.client.http.javanet;x-friends:="com.google.cloud.tools.eclipse.projectselector",
  com.google.api.client.json;x-friends:="com.google.cloud.tools.eclipse.projectselector",

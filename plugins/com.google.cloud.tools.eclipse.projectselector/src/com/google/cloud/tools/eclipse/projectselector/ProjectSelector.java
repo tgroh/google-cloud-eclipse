@@ -16,9 +16,9 @@
 
 package com.google.cloud.tools.eclipse.projectselector;
 
+import com.google.cloud.tools.eclipse.ui.util.OpenUrlListener;
+import com.google.cloud.tools.eclipse.util.url.UrlUtil;
 import com.google.common.base.Strings;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.List;
 import org.eclipse.core.databinding.beans.PojoProperties;
 import org.eclipse.core.databinding.observable.list.WritableList;
@@ -33,14 +33,10 @@ import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.jface.viewers.ViewerComparator;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Link;
-import org.eclipse.ui.PartInitException;
-import org.eclipse.ui.PlatformUI;
 
 public class ProjectSelector extends Composite {
 
@@ -68,23 +64,7 @@ public class ProjectSelector extends Composite {
     tableViewer.setComparator(new ViewerComparator());
 
     statusLink = new Link(this, SWT.NONE);
-    statusLink.addSelectionListener(new SelectionListener() {
-
-      @Override
-      public void widgetSelected(SelectionEvent e) {
-        try {
-          PlatformUI.getWorkbench().getBrowserSupport().getExternalBrowser().openURL(new URL(e.text));
-        } catch (PartInitException | MalformedURLException e1) {
-          e1.printStackTrace();
-        }
-      }
-
-      @Override
-      public void widgetDefaultSelected(SelectionEvent e) {
-        // TODO Auto-generated method stub
-      }
-      
-    });
+    statusLink.addSelectionListener(new OpenUrlListener());
     statusLink.setText("");
     GridDataFactory.fillDefaults().applyTo(statusLink);
   }
@@ -123,7 +103,12 @@ public class ProjectSelector extends Composite {
 
   public void setStatusLink(String linkText) {
     statusLink.setText(linkText);
-    // TODO set tooltip to url - parse from linkText with regex
+    String link = UrlUtil.parseUrlFromHtmlLink(linkText);
+    if (Strings.isNullOrEmpty(link)) {
+      statusLink.setToolTipText(null);
+    } else {
+      statusLink.setToolTipText(link);
+    }
     boolean hide = Strings.isNullOrEmpty(linkText);
     ((GridData) statusLink.getLayoutData()).exclude = hide;
     statusLink.setVisible(!hide);
