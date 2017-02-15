@@ -23,6 +23,7 @@ import com.google.cloud.tools.appengine.cloudsdk.CloudSdkNotFoundException;
 import com.google.cloud.tools.appengine.cloudsdk.CloudSdkOutOfDateException;
 import com.google.cloud.tools.eclipse.appengine.ui.AppEngineImages;
 import com.google.cloud.tools.eclipse.login.IGoogleLoginService;
+import com.google.cloud.tools.eclipse.projectselector.ProjectRepository;
 import com.google.common.base.Preconditions;
 import org.eclipse.core.databinding.ValidationStatusProvider;
 import org.eclipse.core.resources.IProject;
@@ -75,7 +76,9 @@ public class DeployPreferencesDialog extends TitleAreaDialog {
       setTitleImage(titleImage);
     }
 
-    getButton(IDialogConstants.OK_ID).setText(Messages.getString("deploy"));
+    Button deployButton = getButton(IDialogConstants.OK_ID);
+    deployButton.setText(Messages.getString("deploy"));
+    deployButton.setEnabled(false);
 
     // TitleAreaDialogSupport does not validate initially, let's trigger validation this way
     content.getDataBindingContext().updateTargets();
@@ -89,7 +92,7 @@ public class DeployPreferencesDialog extends TitleAreaDialog {
 
     Composite container = new Composite(dialogArea, SWT.NONE);
     content = new StandardDeployPreferencesPanel(container, project, loginService,
-        getLayoutChangedHandler(), true /* requireValues */);
+        getLayoutChangedHandler(), true /* requireValues */, new ProjectRepository());
     GridDataFactory.fillDefaults().grab(true, false).applyTo(content);
 
     // we pull in Dialog's content margins which are zeroed out by TitleAreaDialog
@@ -106,7 +109,7 @@ public class DeployPreferencesDialog extends TitleAreaDialog {
           @Override
           public int getMessageType(ValidationStatusProvider statusProvider) {
             int type = super.getMessageType(statusProvider);
-            setValid(type != IMessageProvider.ERROR);
+            setValid(type != IMessageProvider.ERROR && content.hasSelection());
             return type;
           }
         });
@@ -175,9 +178,9 @@ public class DeployPreferencesDialog extends TitleAreaDialog {
   }
 
   private void setValid(boolean isValid) {
-    Button okButton = getButton(IDialogConstants.OK_ID);
-    if (okButton != null) {
-      okButton.setEnabled(isValid);
+    Button deployButton = getButton(IDialogConstants.OK_ID);
+    if (deployButton != null) {
+      deployButton.setEnabled(isValid && content.hasSelection());
     }
   }
 

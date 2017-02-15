@@ -16,10 +16,14 @@
 
 package com.google.cloud.tools.eclipse.projectselector;
 
-import org.junit.Test;
+public class ProjectRepositoryException extends Exception {
 
-public class DummyTest {
-  @Test
-  public void test() {
+  public ProjectRepositoryException(Exception ex) {
+    super(ex);
   }
+
+  public ProjectRepositoryException(String reason) {
+    super(reason);
+  }
+
 }
