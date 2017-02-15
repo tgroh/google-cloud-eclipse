@@ -174,16 +174,21 @@ public class LocalAppEngineServerLaunchConfigurationDelegate
     }
 
     int adminPort = getPortAttribute(LocalAppEngineServerBehaviour.ADMIN_PORT_ATTRIBUTE_NAME,
-        LocalAppEngineServerBehaviour.DEFAULT_ADMIN_PORT, configuration, server);
+        -1, configuration, server);
     if (adminPort >= 0) {
       devServerRunConfiguration.setAdminPort(adminPort);
+    } else {
+      // adminPort = -1 perform failover if default port is busy
+      devServerRunConfiguration.setAdminPort(LocalAppEngineServerBehaviour.DEFAULT_ADMIN_PORT);
     }
-    // The admin port is a web UI and so we allow its port to failover if it's in use
-    if (devServerRunConfiguration.getAdminPort() != null) {
+    if (adminPort < 0) {
+      Preconditions.checkNotNull(devServerRunConfiguration.getAdminPort());
       // adminHost == null is ok as that resolves to null == INADDR_ANY
       InetAddress addr = resolveAddress(devServerRunConfiguration.getAdminHost());
       if (org.eclipse.wst.server.core.util.SocketUtil.isPortInUse(addr,
           devServerRunConfiguration.getAdminPort())) {
+        logger.log(Level.INFO, "default admin port " + devServerRunConfiguration.getAdminPort()
+            + " in use. Picking an unused port.");
         devServerRunConfiguration.setAdminPort(0);
       }
     }
