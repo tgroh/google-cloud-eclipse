@@ -61,7 +61,8 @@ public class ToServlet25QuickFixTest {
     Document transformed = transform(webXml);
     Element documentElement = transformed.getDocumentElement();
     assertEquals("2.5", documentElement.getAttribute("version"));
-    Element element = (Element) documentElement.getFirstChild();
+    Element element = (Element) documentElement
+        .getElementsByTagNameNS("http://java.sun.com/xml/ns/javaee", "foo").item(0);
     assertEquals("foo", element.getTagName());
   }
   
@@ -74,7 +75,8 @@ public class ToServlet25QuickFixTest {
     Document transformed = transform(webXml);
     Element documentElement = transformed.getDocumentElement();
     assertEquals("2.5", documentElement.getAttribute("version"));
-    Element element = (Element) documentElement.getFirstChild();
+    Element element = (Element) documentElement
+        .getElementsByTagNameNS("http://java.sun.com/xml/ns/javaee", "foo").item(0);
     assertEquals("foo", element.getTagName());
   }
   

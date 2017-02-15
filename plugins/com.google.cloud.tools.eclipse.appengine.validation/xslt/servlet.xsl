@@ -7,6 +7,8 @@
 	xmlns:ns1="http://xmlns.jcp.org/xml/ns/javaee"
 	xmlns:ns2="http://java.sun.com/xml/ns/javaee"
 	exclude-result-prefixes="ns1 ns2">
+  
+  <xsl:output method="xml" indent="yes"/>
 
   <xsl:template match="node()|@*">
     <xsl:copy>
