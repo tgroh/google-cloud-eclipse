@@ -26,7 +26,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.xml.sax.SAXException;
 
 /**
- * Validator for web.xml
+ * Validator for web.xml.
  */
 public class WebXmlValidator extends AbstractXmlValidator {
    
