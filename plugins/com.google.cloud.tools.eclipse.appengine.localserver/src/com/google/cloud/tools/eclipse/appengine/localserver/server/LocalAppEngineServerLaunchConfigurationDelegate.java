@@ -24,14 +24,13 @@ import com.google.cloud.tools.eclipse.appengine.localserver.Messages;
 import com.google.cloud.tools.eclipse.appengine.localserver.PreferencesInitializer;
 import com.google.cloud.tools.eclipse.appengine.localserver.ui.LocalAppEngineConsole;
 import com.google.cloud.tools.eclipse.ui.util.MessageConsoleUtilities;
+import com.google.cloud.tools.eclipse.ui.util.WorkbenchUtil;
 import com.google.cloud.tools.eclipse.usagetracker.AnalyticsEvents;
 import com.google.cloud.tools.eclipse.usagetracker.AnalyticsPingManager;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import java.io.File;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -45,7 +44,6 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.debug.core.DebugException;
 import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.ILaunch;
@@ -57,12 +55,6 @@ import org.eclipse.jdt.launching.IJavaLaunchConfigurationConstants;
 import org.eclipse.jdt.launching.IVMConnector;
 import org.eclipse.jdt.launching.JavaRuntime;
 import org.eclipse.jdt.launching.SocketUtil;
-import org.eclipse.swt.program.Program;
-import org.eclipse.ui.IWorkbench;
-import org.eclipse.ui.PartInitException;
-import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.browser.IWorkbenchBrowserSupport;
-import org.eclipse.ui.progress.UIJob;
 import org.eclipse.wst.server.core.IModule;
 import org.eclipse.wst.server.core.IServer;
 import org.eclipse.wst.server.core.IServerListener;
@@ -169,33 +161,7 @@ public class LocalAppEngineServerLaunchConfigurationDelegate
     if (pageLocation == null) {
       return;
     }
-    final IWorkbench workbench = PlatformUI.getWorkbench();
-
-    Job openJob = new UIJob(workbench.getDisplay(), "Launching start page") { //$NON-NLS-1$
-
-      @Override
-      public IStatus runInUIThread(IProgressMonitor monitor) {
-        if (server.getServerState() != IServer.STATE_STARTED) {
-          return Status.CANCEL_STATUS;
-        }
-        try {
-          URL url = new URL(pageLocation);
-          IWorkbenchBrowserSupport browserSupport = workbench.getBrowserSupport();
-          int style = IWorkbenchBrowserSupport.LOCATION_BAR
-              | IWorkbenchBrowserSupport.NAVIGATION_BAR | IWorkbenchBrowserSupport.STATUS;
-          browserSupport.createBrowser(style, server.getId(), server.getName(), server.getName())
-              .openURL(url);
-        } catch (PartInitException ex) {
-          // Unable to use the normal browser support, so punt to the OS
-          logger.log(Level.WARNING, "Cannot launch a browser", ex); //$NON-NLS-1$
-          Program.launch(pageLocation);
-        } catch (MalformedURLException ex) {
-          logger.log(Level.SEVERE, "Invalid dev_appserver URL", ex); //$NON-NLS-1$
-        }
-        return Status.OK_STATUS;
-      }
-    };
-    openJob.schedule();
+    WorkbenchUtil.openInBrowserInUiThread(pageLocation, server.getId(), server.getName(), server.getName());
   }
 
   private void setupDebugTarget(ILaunch launch, int port,

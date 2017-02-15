@@ -23,15 +23,11 @@ import com.google.cloud.tools.appengine.cloudsdk.CloudSdkNotFoundException;
 import com.google.cloud.tools.appengine.cloudsdk.CloudSdkOutOfDateException;
 import com.google.cloud.tools.eclipse.preferences.areas.PreferenceArea;
 import com.google.cloud.tools.eclipse.sdk.internal.PreferenceConstants;
+import com.google.cloud.tools.eclipse.ui.util.WorkbenchUtil;
 import java.io.File;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.text.MessageFormat;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.Dialog;
@@ -43,17 +39,14 @@ import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.program.Program;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Link;
-import org.eclipse.ui.PartInitException;
-import org.eclipse.ui.browser.IWorkbenchBrowserSupport;
+import org.eclipse.ui.PlatformUI;
 
 public class CloudSdkPreferenceArea extends PreferenceArea {
   /** Preference Page ID that hosts this area. */
   public static final String PAGE_ID = "com.google.cloud.tools.eclipse.preferences.main";
-  private static final Logger logger = Logger.getLogger(CloudSdkPreferenceArea.class.getName());
 
   private CloudSdkDirectoryFieldEditor sdkLocation;
   private IStatus status = Status.OK_STATUS;
@@ -73,7 +66,7 @@ public class CloudSdkPreferenceArea extends PreferenceArea {
   public Control createContents(Composite parent) {
     Composite contents = new Composite(parent, SWT.NONE);
     Link instructions = new Link(contents, SWT.WRAP);
-    instructions.setText(SdkUiMessages.CloudSdkRequired);
+    instructions.setText(SdkUiMessages.getString("CloudSdkRequired"));
     instructions.setFont(contents.getFont());
     instructions.addSelectionListener(new SelectionAdapter() {
       @Override
@@ -84,7 +77,7 @@ public class CloudSdkPreferenceArea extends PreferenceArea {
 
     Composite fieldContents = new Composite(parent, SWT.NONE);
     sdkLocation = new CloudSdkDirectoryFieldEditor(PreferenceConstants.CLOUDSDK_PATH,
-        SdkUiMessages.SdkLocation, fieldContents);
+        SdkUiMessages.getString("SdkLocation"), fieldContents);
     Path defaultLocation = getDefaultSdkLocation();
     if (defaultLocation != null) {
       sdkLocation.setFilterPath(defaultLocation.toFile());
@@ -129,19 +122,7 @@ public class CloudSdkPreferenceArea extends PreferenceArea {
   }
 
   protected void openUrl(String urlText) {
-    try {
-      if (getWorkbench() != null) {
-        URL url = new URL(urlText);
-        IWorkbenchBrowserSupport browserSupport = getWorkbench().getBrowserSupport();
-        browserSupport.createBrowser(null).openURL(url);
-      } else {
-        Program.launch(urlText);
-      }
-    } catch (MalformedURLException mue) {
-      logger.log(Level.WARNING, SdkUiMessages.CloudSdkPreferencePage_3, mue);
-    } catch (PartInitException pie) {
-      logger.log(Level.WARNING, SdkUiMessages.CloudSdkPreferencePage_4, pie);
-    }
+    WorkbenchUtil.openInBrowser(PlatformUI.getWorkbench(), urlText);
   }
 
   private static Path getDefaultSdkLocation() {
@@ -163,14 +144,15 @@ public class CloudSdkPreferenceArea extends PreferenceArea {
       // accept a seemingly invalid location in case the SDK organization
       // has changed and the CloudSdk#validate() code is out of date
       status = new Status(IStatus.WARNING, getClass().getName(),
-          MessageFormat.format(SdkUiMessages.CloudSdkNotFound, sdk.getSdkPath()));
+          SdkUiMessages.getString("CloudSdkNotFound", sdk.getSdkPath()));
       return false;
     } catch (AppEngineJavaComponentsNotInstalledException ex) {
       status = new Status(IStatus.WARNING, getClass().getName(),
-          MessageFormat.format(SdkUiMessages.AppEngineJavaComponentsNotInstalled, ex.getMessage()));
+          SdkUiMessages.getString("AppEngineJavaComponentsNotInstalled", ex.getMessage()));
       return false;
     } catch (CloudSdkOutOfDateException ex) {
-        status = new Status(IStatus.ERROR, getClass().getName(), SdkUiMessages.CloudSdkOutOfDate);
+      status = new Status(IStatus.ERROR, getClass().getName(),
+          SdkUiMessages.getString("CloudSdkOutOfDate"));
         return false;
     }
   }
@@ -210,11 +192,11 @@ public class CloudSdkPreferenceArea extends PreferenceArea {
 
       Path location = Paths.get(directory);
       if (!Files.exists(location)) {
-        String message = MessageFormat.format(SdkUiMessages.NoSuchDirectory, location);
+        String message = SdkUiMessages.getString("NoSuchDirectory", location);
         status = new Status(IStatus.ERROR, getClass().getName(), message);
         return false;
       } else if (!Files.isDirectory(location)) {
-        String message = MessageFormat.format(SdkUiMessages.FileNotDirectory, location);
+        String message = SdkUiMessages.getString("FileNotDirectory", location);
         status = new Status(IStatus.ERROR, getClass().getName(), message);
         return false;
       }
