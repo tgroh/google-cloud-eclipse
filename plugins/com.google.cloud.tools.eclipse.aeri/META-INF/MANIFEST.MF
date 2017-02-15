@@ -18,6 +18,5 @@ Import-Package: com.google.common.annotations;version="20.0.0",
  org.eclipse.epp.logging.aeri.core,
  org.eclipse.epp.logging.aeri.core.filters,
  org.eclipse.epp.logging.aeri.core.impl,
- org.eclipse.epp.logging.aeri.core.util,
- com.google.protobuf
+ org.eclipse.epp.logging.aeri.core.util
 Require-Bundle: org.eclipse.core.runtime;bundle-version="3.11.0"
