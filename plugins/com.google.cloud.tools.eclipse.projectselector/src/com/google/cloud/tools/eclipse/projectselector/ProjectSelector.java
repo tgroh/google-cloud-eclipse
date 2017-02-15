@@ -137,4 +137,9 @@ public class ProjectSelector extends Composite {
   public void clearStatusLink() {
     setStatusLink("");
   }
+  
+  public boolean hasSelection() {
+    ISelection selection = tableViewer.getSelection();
+    return !selection.isEmpty();
+  }
 }

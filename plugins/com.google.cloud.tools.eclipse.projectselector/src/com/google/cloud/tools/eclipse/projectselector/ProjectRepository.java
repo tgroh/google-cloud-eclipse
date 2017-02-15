@@ -25,13 +25,13 @@ import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson.JacksonFactory;
 import com.google.api.services.appengine.v1.Appengine;
 import com.google.api.services.appengine.v1.Appengine.Apps;
-import com.google.api.services.appengine.v1.Appengine.Apps.Get;
 import com.google.api.services.appengine.v1.model.Application;
 import com.google.api.services.cloudresourcemanager.CloudResourceManager;
 import com.google.api.services.cloudresourcemanager.CloudResourceManager.Projects;
 import com.google.api.services.cloudresourcemanager.model.ListProjectsResponse;
 import com.google.api.services.cloudresourcemanager.model.Project;
 import com.google.cloud.tools.eclipse.util.CloudToolsInfo;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -68,11 +68,11 @@ public class ProjectRepository {
 
   /**
    * @return a project if the projectId identifies an existing project and the account identified by
-   * {@code credential} has access to the project
+   *         {@code credential} has access to the project
    * @throws ProjectRepositoryException if an error happens while communicating with the backend
    */
-  public GcpProject getProject(Credential credential,
-                               String projectId) throws ProjectRepositoryException {
+  public GcpProject getProject(Credential credential, String projectId) 
+      throws ProjectRepositoryException {
     try {
       if (credential != null && !Strings.isNullOrEmpty(projectId)) {
         return convertToGcpProject(getProjectsApi(credential).get(projectId).execute());
@@ -84,7 +84,7 @@ public class ProjectRepository {
     }
   }
 
-  private Projects getProjectsApi(Credential credential) {
+  private static Projects getProjectsApi(Credential credential) {
     JsonFactory jsonFactory = new JacksonFactory();
     HttpTransport transport = new NetHttpTransport();
     CloudResourceManager resourceManager =
@@ -104,17 +104,20 @@ public class ProjectRepository {
     return apps;
   }
 
-  private List<GcpProject> convertToGcpProjects(List<Project> projects) {
+  @VisibleForTesting
+  static List<GcpProject> convertToGcpProjects(List<Project> projects) {
     List<GcpProject> gcpProjects = new ArrayList<>();
-    for (Project project : projects) {
-      if (!PROJECT_DELETE_REQUESTED.equals(project.getLifecycleState())) {
-        gcpProjects.add(convertToGcpProject(project));
+    if (projects != null) {
+      for (Project project : projects) {
+        if (!PROJECT_DELETE_REQUESTED.equals(project.getLifecycleState())) {
+          gcpProjects.add(convertToGcpProject(project));
+        }
       }
     }
     return gcpProjects;
   }
 
-  private GcpProject convertToGcpProject(Project project) {
+  private static GcpProject convertToGcpProject(Project project) {
     return new GcpProject(project.getName(), project.getProjectId());
   }
 
