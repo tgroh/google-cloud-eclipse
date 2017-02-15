@@ -32,6 +32,9 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.google.cloud.tools.appengine.api.devserver.DefaultRunConfiguration;
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.ServerSocket;
 import java.util.Arrays;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -173,6 +176,8 @@ public class LocalAppEngineServerLaunchConfigurationDelegateTest {
         .thenAnswer(AdditionalAnswers.returnsSecondArg());
     when(launchConfiguration.getAttribute(anyString(), anyInt()))
         .thenAnswer(AdditionalAnswers.returnsSecondArg());
+    when(server.getAttribute(anyString(), anyString()))
+        .thenAnswer(AdditionalAnswers.returnsSecondArg());
     when(server.getAttribute(anyString(), anyInt()))
         .thenAnswer(AdditionalAnswers.returnsSecondArg());
 
@@ -180,6 +185,7 @@ public class LocalAppEngineServerLaunchConfigurationDelegateTest {
         .generateServerRunConfiguration(launchConfiguration, server);
     assertNull(config.getHost());
     assertEquals((Integer) LocalAppEngineServerBehaviour.DEFAULT_SERVER_PORT, config.getPort());
+    assertEquals(LocalAppEngineServerBehaviour.DEFAULT_ADMIN_HOST, config.getAdminHost());
     assertEquals((Integer) LocalAppEngineServerBehaviour.DEFAULT_ADMIN_PORT, config.getAdminPort());
     assertNull(config.getApiPort());
     assertNull(config.getJvmFlags());
@@ -233,6 +239,28 @@ public class LocalAppEngineServerLaunchConfigurationDelegateTest {
     verify(launchConfiguration, times(1))
         .getAttribute(eq(LocalAppEngineServerBehaviour.ADMIN_PORT_ATTRIBUTE_NAME), anyInt());
     verify(server, never()).getAttribute(anyString(), anyInt());
+  }
+
+  @Test
+  public void testGenerateRunConfiguration_withAdminPortFailover()
+      throws CoreException, IOException {
+    when(launchConfiguration.getAttribute(anyString(), anyString()))
+        .thenAnswer(AdditionalAnswers.returnsSecondArg());
+    when(server.getAttribute(anyString(), anyString()))
+        .thenAnswer(AdditionalAnswers.returnsSecondArg());
+
+    // dev_appserver waits on localhost by default
+    try (ServerSocket socket = new ServerSocket(0, 100, InetAddress.getLoopbackAddress())) {
+      when(launchConfiguration
+          .getAttribute(eq(LocalAppEngineServerBehaviour.ADMIN_PORT_ATTRIBUTE_NAME), anyInt()))
+              .thenReturn(socket.getLocalPort());
+
+      DefaultRunConfiguration config = new LocalAppEngineServerLaunchConfigurationDelegate()
+          .generateServerRunConfiguration(launchConfiguration, server);
+
+      assertNotNull(config.getAdminPort());
+      assertEquals(0, (int) config.getAdminPort());
+    }
   }
 
   @Test

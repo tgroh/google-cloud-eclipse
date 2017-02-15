@@ -33,7 +33,10 @@ import com.google.cloud.tools.eclipse.util.status.StatusUtil;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
+import com.google.common.net.InetAddresses;
 import java.io.File;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -134,7 +137,8 @@ public class LocalAppEngineServerLaunchConfigurationDelegate
 
   /**
    * Create a CloudSdk RunConfiguration corresponding to the launch configuration and server
-   * defaults.
+   * defaults. Details are pulled from {@link ILaunchConfiguration#getAttributes() launch
+   * attributes} and {@link IServer server settings and attributes}.
    */
   @VisibleForTesting
   DefaultRunConfiguration generateServerRunConfiguration(ILaunchConfiguration configuration,
@@ -163,13 +167,28 @@ public class LocalAppEngineServerLaunchConfigurationDelegate
       devServerRunConfiguration.setPort(serverPort);
     }
 
+    String adminHost = getAttribute(LocalAppEngineServerBehaviour.ADMIN_HOST_ATTRIBUTE_NAME,
+        LocalAppEngineServerBehaviour.DEFAULT_ADMIN_HOST, configuration, server);
+    if (!Strings.isNullOrEmpty(adminHost)) {
+      devServerRunConfiguration.setAdminHost(adminHost);
+    }
+
     int adminPort = getPortAttribute(LocalAppEngineServerBehaviour.ADMIN_PORT_ATTRIBUTE_NAME,
         LocalAppEngineServerBehaviour.DEFAULT_ADMIN_PORT, configuration, server);
     if (adminPort >= 0) {
       devServerRunConfiguration.setAdminPort(adminPort);
     }
-    // TODO: apiPort
+    // The admin port is a web UI and so we allow its port to failover if it's in use
+    if (devServerRunConfiguration.getAdminPort() != null) {
+      // adminHost == null is ok as that resolves to null == INADDR_ANY
+      InetAddress addr = resolveAddress(devServerRunConfiguration.getAdminHost());
+      if (org.eclipse.wst.server.core.util.SocketUtil.isPortInUse(addr,
+          devServerRunConfiguration.getAdminPort())) {
+        devServerRunConfiguration.setAdminPort(0);
+      }
+    }
 
+    // TODO: apiPort?
     // vmArguments is exactly as supplied by the user in the dialog box
     String vmArgumentString = getVMArguments(configuration);
     List<String> vmArguments = Arrays.asList(DebugPlugin.parseArguments(vmArgumentString));
@@ -180,6 +199,52 @@ public class LocalAppEngineServerLaunchConfigurationDelegate
     return devServerRunConfiguration;
   }
 
+  /**
+   * Retrieve and resolve a string attribute. If not specified, returns {@code defaultValue}.
+   */
+  private String getAttribute(String attributeName, String defaultValue,
+      ILaunchConfiguration configuration, IServer server) {
+    try {
+      if (configuration.hasAttribute(attributeName)) {
+        String result = configuration.getAttribute(attributeName, "");
+        if (result != null) {
+          return result;
+        }
+      }
+    } catch (CoreException ex) {
+      logger.log(Level.WARNING, "Unable to retrieve " + attributeName, ex);
+    }
+    return server.getAttribute(attributeName, defaultValue);
+  }
+
+  /**
+   * Resolve an host or IP address to an IP address.
+   * 
+   * @return an {@link InetAddress} or {@code null} if unable to be resolved (equivalent to
+   *         {@code INADDR_ANY})
+   */
+  private static InetAddress resolveAddress(String ipOrHost) {
+    if (!Strings.isNullOrEmpty(ipOrHost)) {
+      if (InetAddresses.isInetAddress(ipOrHost)) {
+        return InetAddresses.forString(ipOrHost);
+      }
+      try {
+        InetAddress[] addresses = InetAddress.getAllByName(ipOrHost);
+        return addresses[0];
+      } catch (UnknownHostException ex) {
+        logger.info("Unable to resolve '" + ipOrHost + "' to an address");
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Pull out a port from the specified attribute on the given {@link ILaunchConfiguration} or
+   * {@link IServer} instance.
+   * 
+   * @param defaultPort the port if no port attributes are found
+   * @return the port, or {@code defaultPort} if no port was found
+   */
   @VisibleForTesting
   static int getPortAttribute(String attributeName, int defaultPort,
       ILaunchConfiguration configuration, IServer server) {
