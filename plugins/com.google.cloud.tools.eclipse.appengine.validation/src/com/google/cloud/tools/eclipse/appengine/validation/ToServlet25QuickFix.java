@@ -28,7 +28,7 @@ import org.eclipse.ui.IMarkerResolution;
 import com.google.cloud.tools.eclipse.util.Xslt;
 
 /**
- * Replaces web.xml <web-app> element with servlet 2.5 deployment descriptor.
+ * Replaces web.xml <web-app> element with Servlet 2.5 deployment descriptor.
  */
 public class ToServlet25QuickFix implements IMarkerResolution {
   
@@ -37,7 +37,7 @@ public class ToServlet25QuickFix implements IMarkerResolution {
 
   @Override
   public String getLabel() {
-    return Messages.getString("replace.version");
+    return Messages.getString("convert.servlet");
   }
 
   @Override

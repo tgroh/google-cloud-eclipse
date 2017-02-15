@@ -32,7 +32,7 @@ public class WebXmlValidator extends AbstractXmlValidator {
    
   /**
    * Clears all problem markers from the resource, then creates a servlet marker in 
-   * web.xml if servlet is not version 2.5.
+   * web.xml if the servlet is not version 2.5.
    */
   @Override
   protected void validate(IResource resource, byte[] bytes) 

@@ -26,7 +26,7 @@ import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
 /**
- * Parses a given XML file and wraps blacklisted element Queue
+ * Parses a given XML file. Wraps blacklisted element Queue
  * and the file's character encoding.
  */
 abstract class AbstractScanner extends DefaultHandler {

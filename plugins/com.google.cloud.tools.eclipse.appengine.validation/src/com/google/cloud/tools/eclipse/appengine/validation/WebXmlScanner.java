@@ -21,7 +21,7 @@ import org.xml.sax.SAXException;
 import org.xml.sax.ext.Locator2;
 
 /**
- * Adds <web-app> element to queue if the servlet version is not 2.5.
+ * Adds <web-app> element to {@link BannedElement} queue if the Servlet version is not 2.5.
  */
 class WebXmlScanner extends AbstractScanner {
 

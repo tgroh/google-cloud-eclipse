@@ -31,7 +31,7 @@ import org.xml.sax.SAXException;
 public class AppEngineWebXmlValidator extends AbstractXmlValidator {
     
   /**
-   * Clears all problem markers from the resource, then adds an application marker to 
+   * Clears all problem markers from the resource, then adds a blacklist marker to 
    * appengine-web.xml for every {@link BannedElement} found in the file.
    */
   @Override

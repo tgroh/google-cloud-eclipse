@@ -19,7 +19,7 @@ package com.google.cloud.tools.eclipse.appengine.validation;
 import com.google.common.base.Preconditions;
 
 /**
- * A blacklisted element found in appengine-web.xml
+ * A blacklisted element that will receive a problem marker. 
  */
 public class BannedElement {
 
