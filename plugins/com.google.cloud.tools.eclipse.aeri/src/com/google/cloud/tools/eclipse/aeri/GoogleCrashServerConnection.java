@@ -46,11 +46,9 @@ import org.eclipse.epp.logging.aeri.core.filters.RequiredPackagesFilter;
 import org.eclipse.epp.logging.aeri.core.util.Reports;
 
 /** A very simple connector to the Google Feedback tool. */
-public class GoogleFeedbackServerConnection implements IServerConnection {
+public class GoogleCrashServerConnection implements IServerConnection {
   @VisibleForTesting
-  static final String CT4E_PRODUCT = "Cloud Tools for Eclipse";
-  @VisibleForTesting
-  static final String CT4E_PACKAGE_NAME = "com.google.gct.eclipse";
+  static final String CT4E_PRODUCT_ID = "CT4E";
 
   @VisibleForTesting
   static final String NONE_STRING = "__NONE___";
@@ -91,7 +89,7 @@ public class GoogleFeedbackServerConnection implements IServerConnection {
   private ISystemSettings settings;
 
   @VisibleForTesting
-  GoogleFeedbackErrorReporter reporter;
+  GoogleCrashStackTraceReporter reporter;
 
   // FIXME: statusFilters should be Predicate<? super IStatus> but
   // leads to a Guava mismatch as AERI requires guava [15,16)
@@ -102,10 +100,10 @@ public class GoogleFeedbackServerConnection implements IServerConnection {
   private List<Pattern> acceptedPatterns;
 
   @Inject
-  public GoogleFeedbackServerConnection(ISystemSettings settings) {
+  public GoogleCrashServerConnection(ISystemSettings settings) {
     this.settings = settings;
-    this.reporter = new GoogleFeedbackErrorReporter();
-    
+    this.reporter = new GoogleCrashStackTraceReporter();
+
     requiredPatterns = Arrays.asList(Pattern.compile("com\\.google\\.cloud\\.tools\\..*"));
     statusFilters = new RequiredPackagesFilter(requiredPatterns);
 
@@ -152,10 +150,8 @@ public class GoogleFeedbackServerConnection implements IServerConnection {
 
     buildKeyValuesMap(report);
 
-    /*
-     * Anonymization is performed by one of the many report processors, which are controlled by the
-     * reporting UI. We can force anonymization of the data here.
-     */
+    // Anonymization is performed by one of the many report processors, which are controlled by the
+    // reporting UI. We can force anonymization of the data here.
     // if (options.isAnonymizeMessages()) {
     // Reports.anonymizeMessages(report);
     // }
@@ -181,10 +177,9 @@ public class GoogleFeedbackServerConnection implements IServerConnection {
     String applicationVersion = nullToNone(getFeatureVersion());
 
     IProblemState response = IModelFactory.eINSTANCE.createProblemState();
-    String token = reporter.sendFeedback(CT4E_PRODUCT, CT4E_PACKAGE_NAME, exception, params,
-        errorMessage, errorDescription, applicationVersion);
+    String reportId = reporter.sendFeedback(exception, report.getComment());
     // Result is a number, e.g., 1484376400916
-    response.setMessage(MessageFormat.format("Thank you: submitted as issue {0}.", token));
+    response.setMessage(MessageFormat.format("Thank you: submitted as report {0}.", reportId));
     response.setStatus(ProblemStatus.NEW);
     // can add a set of links to the response, shown in the UI
     // Links.addLink(response, Links.REL_SUBMISSION, resultAsUrl, "Submission");
