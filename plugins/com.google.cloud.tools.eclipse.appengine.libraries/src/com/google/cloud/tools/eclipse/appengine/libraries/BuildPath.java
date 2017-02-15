@@ -67,9 +67,9 @@ public class BuildPath {
         Messages.getString("adding.app.engine.libraries"), libraries.size()); //$NON-NLS-1$
 
     IClasspathEntry[] rawClasspath = javaProject.getRawClasspath();
-    ArrayList<IClasspathEntry> newRawClasspath = new ArrayList<>(rawClasspath.length + libraries.size());
+    List<IClasspathEntry> newRawClasspath = new ArrayList<>(rawClasspath.length + libraries.size());
     newRawClasspath.addAll(Arrays.asList(rawClasspath));
-    ArrayList<IClasspathEntry> newEntries = new ArrayList<>();
+    List<IClasspathEntry> newEntries = new ArrayList<>();
     for (Library library : libraries) {
       IClasspathEntry libraryContainer = makeClasspathEntry(library);
       if (!newRawClasspath.contains(libraryContainer)) {
