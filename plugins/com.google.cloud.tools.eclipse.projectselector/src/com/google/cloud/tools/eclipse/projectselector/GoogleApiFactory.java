@@ -27,11 +27,17 @@ import com.google.api.services.cloudresourcemanager.CloudResourceManager;
 import com.google.api.services.cloudresourcemanager.CloudResourceManager.Projects;
 import com.google.cloud.tools.eclipse.util.CloudToolsInfo;
 
+/**
+ * Class to obtain various Google cloud Platform related APIs.
+ */
 public class GoogleApiFactory {
 
   private final JsonFactory jsonFactory = new JacksonFactory();
   private final HttpTransport transport = new NetHttpTransport();
 
+  /**
+   * @return the CloudResourceManager/Projects API
+   */
   public Projects getProjectsApi(Credential credential) {
     CloudResourceManager resourceManager =
         new CloudResourceManager.Builder(transport, jsonFactory, credential)
@@ -40,6 +46,9 @@ public class GoogleApiFactory {
     return projects;
   }
 
+  /**
+   * @return the Appengine/Apps API
+   */
   public Apps getAppsApi(Credential credential) {
     Appengine appengine =
         new Appengine.Builder(transport, jsonFactory, credential)

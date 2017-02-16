@@ -17,7 +17,6 @@
 package com.google.cloud.tools.eclipse.projectselector;
 
 import com.google.cloud.tools.eclipse.ui.util.OpenUrlListener;
-import com.google.cloud.tools.eclipse.util.url.UrlUtil;
 import com.google.common.base.Strings;
 import java.util.List;
 import org.eclipse.core.databinding.beans.PojoProperties;
@@ -101,14 +100,9 @@ public class ProjectSelector extends Composite {
     tableViewer.removePostSelectionChangedListener(listener);
   }
 
-  public void setStatusLink(String linkText) {
+  public void setStatusLink(String linkText, String tooltip) {
     statusLink.setText(linkText);
-    String link = UrlUtil.parseUrlFromHtmlLink(linkText);
-    if (Strings.isNullOrEmpty(link)) {
-      statusLink.setToolTipText(null);
-    } else {
-      statusLink.setToolTipText(link);
-    }
+    setTooltip(tooltip);
     boolean hide = Strings.isNullOrEmpty(linkText);
     ((GridData) statusLink.getLayoutData()).exclude = hide;
     statusLink.setVisible(!hide);
@@ -119,8 +113,16 @@ public class ProjectSelector extends Composite {
     }
   }
 
+  private void setTooltip(String tooltip) {
+    if (Strings.isNullOrEmpty(tooltip)) {
+      statusLink.setToolTipText(null);
+    } else {
+      statusLink.setToolTipText(tooltip);
+    }
+  }
+
   public void clearStatusLink() {
-    setStatusLink("");
+    setStatusLink("", "");
   }
   
   public boolean hasSelection() {

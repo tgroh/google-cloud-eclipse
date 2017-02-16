@@ -40,12 +40,14 @@ import org.mockito.runners.MockitoJUnitRunner;
 @RunWith(MockitoJUnitRunner.class)
 public class ProjectSelectorSelectionChangedListenerTest {
 
-  private static final String EXPECTED_WHEN_NO_APPLICATION =
+  private static final String EXPECTED_LINK =
+      "https://console.cloud.google.com/appengine/create?lang=java&project=projectId";
+  private static final String EXPECTED_MESSAGE_WHEN_NO_APPLICATION =
       "This project does not have App Engine application which "
       + "is required\nfor deployment. "
-      + "<a href=\"https://console.cloud.google.com/appengine/create?lang=java&project=projectId\">"
+      + "<a href=\"" + EXPECTED_LINK + "\">"
       + "Click here</a> to create it.";
-  private static final String EXPECTED_WHEN_EXCEPTION =
+  private static final String EXPECTED_MESSAGE_WHEN_EXCEPTION =
       "An error happened while retrieving App Engine application: testException";
 
   @Mock private AccountSelector accountSelector;
@@ -75,7 +77,7 @@ public class ProjectSelectorSelectionChangedListenerTest {
         .thenThrow(new ProjectRepositoryException("testException"));
 
     listener.selectionChanged(event);
-    verify(projectSelector).setStatusLink(EXPECTED_WHEN_EXCEPTION);
+    verify(projectSelector).setStatusLink(EXPECTED_MESSAGE_WHEN_EXCEPTION, null /* tooltip */);
   }
 
   @Test
@@ -85,7 +87,7 @@ public class ProjectSelectorSelectionChangedListenerTest {
         .thenReturn(false);
 
     listener.selectionChanged(event);
-    verify(projectSelector).setStatusLink(EXPECTED_WHEN_NO_APPLICATION);
+    verify(projectSelector).setStatusLink(EXPECTED_MESSAGE_WHEN_NO_APPLICATION, EXPECTED_LINK);
   }
 
   @Test

@@ -23,11 +23,15 @@ import com.google.cloud.tools.eclipse.projectselector.GcpProject;
 import com.google.cloud.tools.eclipse.projectselector.ProjectRepository;
 import com.google.cloud.tools.eclipse.projectselector.ProjectRepositoryException;
 import com.google.cloud.tools.eclipse.projectselector.ProjectSelector;
+import java.text.MessageFormat;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 
 public class ProjectSelectorSelectionChangedListener implements ISelectionChangedListener {
+
+  private static String CREATE_APP_LINK =
+      "https://console.cloud.google.com/appengine/create?lang=java&project={0}";
 
   private final AccountSelector accountSelector;
   private final ProjectRepository projectRepository;
@@ -52,9 +56,10 @@ public class ProjectSelectorSelectionChangedListener implements ISelectionChange
         boolean hasAppEngineApplication =
             projectRepository.hasAppEngineApplication(selectedCredential, projectId);
         if (!hasAppEngineApplication) {
+          String link = MessageFormat.format(CREATE_APP_LINK, projectId);
           projectSelector.setStatusLink(
               Messages.getString("projectselector.missing.appengine.application.link",
-                                 projectId));
+                                 link), link);
         } else {
           projectSelector.clearStatusLink();
         }
@@ -63,7 +68,8 @@ public class ProjectSelectorSelectionChangedListener implements ISelectionChange
       }
     } catch (ProjectRepositoryException ex) {
       projectSelector.setStatusLink(Messages.getString("projectselector.retrieveapplication.error.message",
-                                                       ex.getLocalizedMessage()));
+                                                       ex.getLocalizedMessage()),
+                                    null /* tooltip */);
     }
   }
 }
