@@ -46,7 +46,7 @@ public class ProjectSelector extends Composite {
   public ProjectSelector(Composite parent) {
     super(parent, SWT.NONE);
     setLayout(new GridLayout());
-    
+
     Composite tableComposite = new Composite(this, SWT.NONE);
     TableColumnLayout tableColumnLayout = new TableColumnLayout();
     tableComposite.setLayout(tableColumnLayout);
@@ -123,10 +123,5 @@ public class ProjectSelector extends Composite {
 
   public void clearStatusLink() {
     setStatusLink("", "");
-  }
-  
-  public boolean hasSelection() {
-    ISelection selection = tableViewer.getSelection();
-    return !selection.isEmpty();
   }
 }

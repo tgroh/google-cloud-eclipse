@@ -27,9 +27,11 @@ import com.google.cloud.tools.eclipse.projectselector.ProjectRepositoryException
 import com.google.cloud.tools.eclipse.projectselector.ProjectSelector;
 import com.google.cloud.tools.eclipse.ui.util.FontUtil;
 import com.google.cloud.tools.eclipse.ui.util.databinding.BucketNameValidator;
+import com.google.cloud.tools.eclipse.ui.util.databinding.ProjectSelectorValidator;
 import com.google.cloud.tools.eclipse.ui.util.databinding.ProjectVersionValidator;
 import com.google.cloud.tools.eclipse.util.status.StatusUtil;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import java.util.Collections;
 import java.util.List;
@@ -45,6 +47,7 @@ import org.eclipse.core.databinding.observable.Observables;
 import org.eclipse.core.databinding.observable.list.IObservableList;
 import org.eclipse.core.databinding.observable.value.IObservableValue;
 import org.eclipse.core.databinding.observable.value.WritableValue;
+import org.eclipse.core.databinding.validation.IValidator;
 import org.eclipse.core.databinding.validation.MultiValidator;
 import org.eclipse.core.databinding.validation.ValidationStatus;
 import org.eclipse.core.resources.IProject;
@@ -182,11 +185,21 @@ public class StandardDeployPreferencesPanel extends DeployPreferencesPanel {
   }
 
   private void setupProjectIdDataBinding(DataBindingContext context) {
-    IViewerObservableValue projectList = ViewerProperties.singleSelection().observe(projectSelector.getViewer());
+    IViewerObservableValue projectList =
+        ViewerProperties.singleSelection().observe(projectSelector.getViewer());
     IObservableValue projectIdModel = PojoProperties.value("projectId").observe(model);
-    context.bindValue(projectList, projectIdModel,
-                      new UpdateValueStrategy().setConverter(new GcpProjectToProjectIdConverter()),
-                      new UpdateValueStrategy().setConverter(new ProjectIdToGcpProjectConverter()));
+
+    UpdateValueStrategy gcpProjectToProjectId =
+        new UpdateValueStrategy().setConverter(new GcpProjectToProjectIdConverter());
+    UpdateValueStrategy projectIdToGcpProject =
+        new UpdateValueStrategy().setConverter(new ProjectIdToGcpProjectConverter());
+    if (requireValues) {
+      IValidator validator = new ProjectSelectorValidator();
+      gcpProjectToProjectId.setAfterConvertValidator(validator);
+      projectIdToGcpProject.setAfterGetValidator(validator);
+    }
+
+    context.bindValue(projectList, projectIdModel, gcpProjectToProjectId, projectIdToGcpProject);
   }
 
   private void setupProjectVersionDataBinding(DataBindingContext context) {
@@ -391,6 +404,8 @@ public class StandardDeployPreferencesPanel extends DeployPreferencesPanel {
       if (fromObject == null) {
         return null;
       }
+
+      Preconditions.checkArgument(fromObject instanceof String);
       try {
         return projectRepository.getProject(accountSelector.getSelectedCredential(),
                                            (String) fromObject);
@@ -411,6 +426,8 @@ public class StandardDeployPreferencesPanel extends DeployPreferencesPanel {
       if (fromObject == null) {
         return null;
       }
+
+      Preconditions.checkArgument(fromObject instanceof GcpProject);
       return ((GcpProject) fromObject).getId();
     }
   }
@@ -493,9 +510,5 @@ public class StandardDeployPreferencesPanel extends DeployPreferencesPanel {
     super.setFont(font);
     expandableComposite.setFont(font);
     FontUtil.convertFontToBold(expandableComposite);
-  }
-
-  boolean hasSelection() {
-    return projectSelector.hasSelection();
   }
 }
