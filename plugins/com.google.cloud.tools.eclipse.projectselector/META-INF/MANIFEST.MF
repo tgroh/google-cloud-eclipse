@@ -43,4 +43,4 @@ Import-Package: com.google.api.client.auth.oauth2,
  org.eclipse.swt.layout,
  org.eclipse.swt.widgets,
  org.eclipse.ui,
- org.eclipse.ui.browser
+ org.eclipse.ui.browser;ui.workbench=split
