@@ -21,7 +21,7 @@
       id="com.google.cloud.dataflow.DataflowJavaProjectNature"
       name="Cloud Dataflow Nature">
     <runtime>
-      <run class="com.google.cloud.dataflow.eclipse.core.natures.DataflowJavaProjectNature">
+      <run class="com.google.cloud.tools.eclipse.dataflow.core.natures.DataflowJavaProjectNature">
       </run>
     </runtime>
     <requires-nature id="org.eclipse.jdt.core.javanature">
@@ -31,32 +31,32 @@
   <extension
       point="org.eclipse.core.expressions.propertyTesters">
     <propertyTester
-        id="com.google.cloud.dataflow.eclipse.core.DataflowJavaElementTester"
+        id="com.google.cloud.tools.eclipse.dataflow.core.DataflowJavaElementTester"
         type="org.eclipse.jdt.core.IJavaElement"
-        namespace="com.google.cloud.dataflow.eclipse.core"
+        namespace="com.google.cloud.tools.eclipse.dataflow.core"
         properties="isInDataflowProject"
-        class="com.google.cloud.dataflow.eclipse.core.internal.properties.DataflowPropertyTester">
+        class="com.google.cloud.tools.eclipse.dataflow.core.internal.properties.DataflowPropertyTester">
     </propertyTester>
     <propertyTester
-        id="com.google.cloud.dataflow.eclipse.core.DataflowJavaElementTester"
+        id="com.google.cloud.tools.eclipse.dataflow.core.DataflowJavaElementTester"
         type="org.eclipse.core.resources.IProject"
-        namespace="com.google.cloud.dataflow.eclipse.core"
+        namespace="com.google.cloud.tools.eclipse.dataflow.core"
         properties="isDataflowProject,projectIsNotDataflowProject"
-        class="com.google.cloud.dataflow.eclipse.core.internal.properties.DataflowPropertyTester">
+        class="com.google.cloud.tools.eclipse.dataflow.core.internal.properties.DataflowPropertyTester">
     </propertyTester>
     <propertyTester
-        id="com.google.cloud.dataflow.eclipse.core.DataflowVersionTester"
+        id="com.google.cloud.tools.eclipse.dataflow.core.DataflowVersionTester"
         type="org.eclipse.core.resources.IResource"
-        namespace="com.google.cloud.dataflow.eclipse.core"
+        namespace="com.google.cloud.tools.eclipse.dataflow.core"
         properties="tracksDataflowVersion,pinnedDataflowVersion"
-        class="com.google.cloud.dataflow.eclipse.core.internal.properties.DataflowVersionTester">
+        class="com.google.cloud.tools.eclipse.dataflow.core.internal.properties.DataflowVersionTester">
     </propertyTester>
   </extension>
 
   <extension
       point="org.eclipse.debug.core.launchConfigurationTypes">
     <launchConfigurationType
-          delegate="com.google.cloud.dataflow.eclipse.core.launcher.DataflowPipelineLaunchDelegate"
+          delegate="com.google.cloud.tools.eclipse.dataflow.core.launcher.DataflowPipelineLaunchDelegate"
           delegateName="Dataflow Pipeline Launcher"
           id="com.google.cloud.dataflow.DataflowPipeline"
           modes="run,debug"
