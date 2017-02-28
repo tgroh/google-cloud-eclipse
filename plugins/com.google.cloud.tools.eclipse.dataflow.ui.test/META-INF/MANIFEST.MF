@@ -1,0 +1,12 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Dataflow Eclipse UI Unit Tests
+Bundle-SymbolicName: com.google.cloud.dataflow.eclipse.ui.tests
+Bundle-Version: 1.2.0.qualifier
+Bundle-Vendor: GOOGLE
+Bundle-ClassPath: .
+Bundle-RequiredExecutionEnvironment: JavaSE-1.7
+Bundle-ActivationPolicy: lazy
+Fragment-Host: com.google.cloud.dataflow.eclipse.ui
+Require-Bundle: com.google.guava,
+ com.google.cloud.dataflow.eclipse.testdependencies
