@@ -1,11 +1,11 @@
 /*
- * Copyright (C) 2015 Google Inc.
+ * Copyright 2015 Google Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
@@ -13,6 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+
 package com.google.cloud.tools.eclipse.dataflow.core.project;
 
 import com.google.cloud.tools.eclipse.dataflow.core.DataflowCorePlugin;
@@ -97,12 +98,12 @@ public class DataflowProjectCreator implements IRunnableWithProgress {
 
     private final String label;
     private final String archetype;
-    private final NavigableSet<MajorVersion> sdkVersions;
+    private final ImmutableSortedSet<MajorVersion> sdkVersions;
 
     Template(String label, String archetype, NavigableSet<MajorVersion> sdkVersions) {
       this.label = label;
       this.archetype = archetype;
-      this.sdkVersions = sdkVersions;
+      this.sdkVersions = ImmutableSortedSet.copyOf(sdkVersions);
     }
 
     public String getLabel() {

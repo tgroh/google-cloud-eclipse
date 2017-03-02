@@ -1,11 +1,11 @@
 /*
- * Copyright (C) 2015 Google Inc.
+ * Copyright 2015 Google Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
@@ -13,6 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+
 package com.google.cloud.tools.eclipse.dataflow.core.project;
 
 import static com.google.common.base.Preconditions.checkArgument;
@@ -53,8 +54,11 @@ import javax.xml.xpath.XPathFactory;
  *
  * <p>The implementation of {@link DataflowArtifactRetriever} uses low-level URL and XPath APIs
  * rather than using the M2E plugin to work around shortcomings in the ability of M2E to query
- * Maven for available versions. The artifact retriever reads Maven Central metadata xml files to
- * retrieve available and latest versions.
+ * Maven for available versions. Additionally, M2E APIs are internal and unstable, and thus may
+ * change between versions.
+ *
+ * <p>The artifact retriever reads Maven Central metadata xml files to retrieve available and latest
+ * versions.
  */
 public class DataflowArtifactRetriever {
   /**
