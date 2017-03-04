@@ -21,7 +21,6 @@ import org.eclipse.core.expressions.PropertyTester;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IAdaptable;
-import javax.annotation.Nullable;
 
 /**
  * Tests the Dataflow Version of the project a resource is contained within.
@@ -67,7 +66,6 @@ public class DataflowVersionTester extends PropertyTester {
     return project != null && dependencyManager.hasTrackedDataflowDependency(project);
   }
 
-  @Nullable
   private IProject getProjectForReciever(Object receiver) {
     if (!(receiver instanceof IAdaptable)) {
       return null;
