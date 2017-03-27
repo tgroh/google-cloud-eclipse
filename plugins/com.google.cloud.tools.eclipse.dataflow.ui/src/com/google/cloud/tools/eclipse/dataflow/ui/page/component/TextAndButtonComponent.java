@@ -16,13 +16,10 @@
 
 package com.google.cloud.tools.eclipse.dataflow.ui.page.component;
 
-import static com.google.common.base.Preconditions.checkState;
-
 import com.google.cloud.tools.eclipse.dataflow.ui.util.ButtonFactory;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyListener;
-import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -65,25 +62,6 @@ public class TextAndButtonComponent {
   public void addButtonSelectionListener(TextAndButtonSelectionListener listener) {
     listener.init(text, button);
     button.addSelectionListener(listener);
-  }
-
-  /**
-   * A selection listener for use in the TextAndButtonLayout.
-   */
-  public abstract static class TextAndButtonSelectionListener implements SelectionListener {
-    private Text text = null;
-    private Button button = null;
-
-    protected final void setTextValue(String value) {
-      text.setText(value);
-    }
-
-    private void init(Text text, Button button) {
-      checkState(this.text == null && this.button == null,
-          "Cannot call init on a %s that is already intialized.", getClass().getSimpleName());
-      this.text = text;
-      this.button = button;
-    }
   }
 
   public void addTextModifiedListener(ModifyListener listener) {

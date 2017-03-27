@@ -62,6 +62,7 @@ public class LabeledTextMapComponent {
     this.toolkit = toolkit;
     this.parent = parent;
     this.gridData = gridData;
+    this.texts = new LinkedHashMap<>();
     init();
 
     this.argumentsSeparator = argumentsSeparator;
@@ -73,7 +74,7 @@ public class LabeledTextMapComponent {
     Layout layout = new GridLayout(3, false);
     composite.setLayout(layout);
     composite.setLayoutData(gridData);
-    texts = new LinkedHashMap<>();
+    texts.clear();
     parent.layout();
   }
 
@@ -167,7 +168,7 @@ public class LabeledTextMapComponent {
     }
   }
 
-  private GridData singleColumnGridData() {
+  private static GridData singleColumnGridData() {
     GridData data = new GridData();
     data.horizontalSpan = 1;
     data.verticalSpan = 1;
