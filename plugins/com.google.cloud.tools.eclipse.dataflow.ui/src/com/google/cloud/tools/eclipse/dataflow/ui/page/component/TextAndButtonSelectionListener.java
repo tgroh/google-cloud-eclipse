@@ -33,7 +33,7 @@ public abstract class TextAndButtonSelectionListener implements SelectionListene
     text.setText(value);
   }
 
-  private void init(Text text, Button button) {
+  void init(Text text, Button button) {
     checkState(this.text == null && this.button == null,
         "Cannot call init on a %s that is already initialized.", getClass().getSimpleName());
     this.text = text;
