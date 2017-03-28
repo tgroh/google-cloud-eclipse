@@ -18,15 +18,12 @@ package com.google.cloud.tools.eclipse.dataflow.ui.page;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
 import org.eclipse.jface.dialogs.DialogPage;
 import org.eclipse.swt.widgets.Composite;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 
 /**
  * Tests for {@link DialogPageMessageTarget}.
@@ -34,9 +31,9 @@ import org.mockito.MockitoAnnotations;
 @RunWith(JUnit4.class)
 public class DialogPageMessageTargetTest {
   private DialogPage page;
-  
+
   private DialogPageMessageTarget target;
-  
+
   @Before
   public void setup() {
     page = new DialogPage() {
@@ -47,7 +44,7 @@ public class DialogPageMessageTargetTest {
     };
     target = new DialogPageMessageTarget(page);
   }
-  
+
   @Test
   public void setInfo() {
     target.setInfo("info_msg");
@@ -65,6 +62,8 @@ public class DialogPageMessageTargetTest {
   @Test
   public void clear() {
     target.setError("error_msg");
+    target.clear();
     assertNull(page.getMessage());
+    assertEquals(DialogPage.NONE, page.getMessageType());
   }
 }
