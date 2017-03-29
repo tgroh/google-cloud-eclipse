@@ -137,7 +137,7 @@ public class RunOptionsDefaultsComponent {
     messageTarget.setInfo("Set Pipeline Run Option Defaults");
   }
 
-  private GcsDataflowProjectClient setupGcsClient() {
+  private static GcsDataflowProjectClient setupGcsClient() {
     try {
       return GcsDataflowProjectClient.createWithDefaultClient();
     } catch (CouldNotCreateCredentialsException e) {
@@ -249,7 +249,7 @@ public class RunOptionsDefaultsComponent {
    */
   private class GetProjectStagingLocationsListener extends FocusAdapter {
     @Override
-    public void focusLost(FocusEvent e) {
+    public void focusLost(FocusEvent event) {
       updateStagingLocations(getProject());
     }
   }
@@ -260,7 +260,7 @@ public class RunOptionsDefaultsComponent {
    */
   private class CreateStagingLocationListener extends SelectionAdapter {
     @Override
-    public void widgetSelected(SelectionEvent e) {
+    public void widgetSelected(SelectionEvent event) {
       if (client == null) {
         return;
       }
