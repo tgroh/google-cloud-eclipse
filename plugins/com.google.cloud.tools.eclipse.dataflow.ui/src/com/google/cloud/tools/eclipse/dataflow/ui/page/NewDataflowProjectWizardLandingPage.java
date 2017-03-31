@@ -185,7 +185,7 @@ public class NewDataflowProjectWizardLandingPage extends WizardPage  {
 
     advancedComposite.addExpansionListener(new ExpansionAdapter() {
       @Override
-      public void expansionStateChanged(ExpansionEvent e) {
+      public void expansionStateChanged(ExpansionEvent event) {
         advancedComposite.getShell().pack();
       }
     });
@@ -243,7 +243,7 @@ public class NewDataflowProjectWizardLandingPage extends WizardPage  {
   private ModifyListener setProjectNameTemplate() {
     return new ModifyListener() {
       @Override
-      public void modifyText(ModifyEvent e) {
+      public void modifyText(ModifyEvent event) {
         targetCreator.setProjectNameTemplate(projectNameTemplate.getText());
       }
     };
@@ -252,7 +252,7 @@ public class NewDataflowProjectWizardLandingPage extends WizardPage  {
   private ModifyListener propagateGroupIdToPackageListener() {
     return new ModifyListener() {
       @Override
-      public void modifyText(ModifyEvent e) {
+      public void modifyText(ModifyEvent event) {
         packageInput.setText(groupIdInput.getText());
       }
     };
@@ -261,7 +261,7 @@ public class NewDataflowProjectWizardLandingPage extends WizardPage  {
   private FocusListener changeGroupIdPropogationListener(final ModifyListener propogationListener) {
     return new FocusListener() {
       @Override
-      public void focusLost(FocusEvent e) {
+      public void focusLost(FocusEvent event) {
         if (Strings.isNullOrEmpty(packageInput.getText())
             || packageInput.getText().equals(groupIdInput.getText())) {
           packageInput.setText(groupIdInput.getText());
@@ -270,7 +270,7 @@ public class NewDataflowProjectWizardLandingPage extends WizardPage  {
       }
 
       @Override
-      public void focusGained(FocusEvent e) {
+      public void focusGained(FocusEvent event) {
         groupIdInput.removeModifyListener(propogationListener);
       }
     };
@@ -279,7 +279,7 @@ public class NewDataflowProjectWizardLandingPage extends WizardPage  {
   private SelectionListener templateListener() {
     return new SelectionAdapter() {
       @Override
-      public void widgetSelected(SelectionEvent e) {
+      public void widgetSelected(SelectionEvent event) {
         targetCreator.setTemplate(Template.values()[templateDropdown.getSelectionIndex()]);
         updateAvailableVersions();
       }
@@ -332,7 +332,7 @@ public class NewDataflowProjectWizardLandingPage extends WizardPage  {
   private SelectionListener templateVersionListener() {
     return new SelectionAdapter() {
       @Override
-      public void widgetSelected(SelectionEvent e) {
+      public void widgetSelected(SelectionEvent event) {
         updateArchetypeVersion();
       }
     };
@@ -348,7 +348,7 @@ public class NewDataflowProjectWizardLandingPage extends WizardPage  {
       private String customValue = "";
 
       @Override
-      public void widgetSelected(SelectionEvent e) {
+      public void widgetSelected(SelectionEvent event) {
         boolean customLocation = !useDefaultLocation.getSelection();
 
         // Update the targetCreator
@@ -372,7 +372,7 @@ public class NewDataflowProjectWizardLandingPage extends WizardPage  {
   private ModifyListener validateAndSetMavenArtifactIdListener() {
     return new ModifyListener() {
       @Override
-      public void modifyText(ModifyEvent e) {
+      public void modifyText(ModifyEvent event) {
         targetCreator.setMavenArtifactId(artifactIdInput.getText());
         validateAndSetError();
       }
@@ -381,7 +381,7 @@ public class NewDataflowProjectWizardLandingPage extends WizardPage  {
   private ModifyListener validateAndSetMavenGroupIdListener() {
     return new ModifyListener() {
       @Override
-      public void modifyText(ModifyEvent e) {
+      public void modifyText(ModifyEvent event) {
         targetCreator.setMavenGroupId(groupIdInput.getText());
         validateAndSetError();
       }
@@ -391,7 +391,7 @@ public class NewDataflowProjectWizardLandingPage extends WizardPage  {
   private ModifyListener validateAndSetProjectLocationListener() {
     return new ModifyListener() {
       @Override
-      public void modifyText(ModifyEvent e) {
+      public void modifyText(ModifyEvent event) {
         String locationInputString = locationInput.getText();
         if (Strings.isNullOrEmpty(locationInputString)) {
           targetCreator.setProjectLocation(null);
@@ -409,7 +409,7 @@ public class NewDataflowProjectWizardLandingPage extends WizardPage  {
   private ModifyListener validateAndSetPackageListener() {
     return new ModifyListener() {
       @Override
-      public void modifyText(ModifyEvent e) {
+      public void modifyText(ModifyEvent event) {
         String packageInputString = packageInput.getText();
         targetCreator.setPackage(packageInputString);
         validateAndSetError();
@@ -424,7 +424,7 @@ public class NewDataflowProjectWizardLandingPage extends WizardPage  {
   private SelectionListener folderSelectionListener(final Shell shell) {
     return new SelectionAdapter() {
       @Override
-      public void widgetSelected(SelectionEvent e) {
+      public void widgetSelected(SelectionEvent event) {
         DirectoryDialog dialog = new DirectoryDialog(shell);
         dialog.setMessage("Select project location");
         String result = dialog.open();
