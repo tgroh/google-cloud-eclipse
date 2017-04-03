@@ -30,15 +30,21 @@ import com.google.cloud.tools.eclipse.dataflow.core.preferences.ProjectOrWorkspa
 import com.google.cloud.tools.eclipse.dataflow.core.project.DataflowDependencyManager;
 import com.google.cloud.tools.eclipse.dataflow.core.project.MajorVersion;
 import com.google.cloud.tools.eclipse.dataflow.ui.DataflowUiPlugin;
+import com.google.cloud.tools.eclipse.dataflow.ui.page.MessageTarget;
 import com.google.cloud.tools.eclipse.dataflow.ui.page.component.LabeledTextMapComponent;
 import com.google.cloud.tools.eclipse.dataflow.ui.page.component.TextAndButtonComponent;
-import com.google.cloud.tools.eclipse.dataflow.ui.page.component.TextAndButtonComponent.TextAndButtonSelectionListener;
-import com.google.cloud.tools.eclipse.dataflow.ui.page.MessageTarget;
+import com.google.cloud.tools.eclipse.dataflow.ui.page.component.TextAndButtonSelectionListener;
 import com.google.cloud.tools.eclipse.dataflow.ui.util.DisplayExecutor;
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.util.concurrent.SettableFuture;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executor;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -68,12 +74,6 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.forms.events.ExpansionEvent;
 import org.eclipse.ui.forms.events.IExpansionListener;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executor;
 
 /**
  * A tab specifying arguments required to run a Dataflow Pipeline.
@@ -101,10 +101,12 @@ public class PipelineArgumentsTab extends AbstractLaunchConfigurationTab {
   private final DataflowDependencyManager dependencyManager;
   private final PipelineOptionsHierarchyFactory pipelineOptionsHierarchyFactory;
 
-  /* TODO: By default, this may include all PipelineOptions types, including custom user types that
+  /*
+   * TODO: By default, this may include all PipelineOptions types, including custom user types that
    * are not present in the project that this PipelineArgumentsTab is trying to launch. This
-   * hierarchy should be restricted to only showing options available from the current project,
-   * if able. */
+   * hierarchy should be restricted to only showing options available from the current project, if
+   * able.
+   */
   private PipelineOptionsHierarchy hierarchy;
 
   private IWorkspaceRoot workspaceRoot;

@@ -51,8 +51,8 @@ public class PipelineOptionsFormComponent {
 
   private static final String REQURIED_ARGUMENTS_SECTION_NAME = "Required Arguments";
 
-  private final Set<ModifyListener> modifyListeners;
-  private final Set<IExpansionListener> expansionListeners;
+  private final Set<ModifyListener> modifyListeners = new HashSet<>();
+  private final Set<IExpansionListener> expansionListeners = new HashSet<>();
 
   private final String argumentSeparator;
   private final Set<String> filterProperties;
@@ -60,13 +60,11 @@ public class PipelineOptionsFormComponent {
   private final Composite parent;
   private FormToolkit formToolkit;
   private Form form;
-  private Map<ExpandableComposite, LabeledTextMapComponent> optionsComponents;
+  private Map<ExpandableComposite, LabeledTextMapComponent> optionsComponents =
+      new LinkedHashMap<>();
 
   public PipelineOptionsFormComponent(
       Composite parent, String argumentSeparator, Set<String> filterProperties) {
-    this.modifyListeners = new HashSet<>();
-    this.expansionListeners = new HashSet<>();
-
     this.argumentSeparator = argumentSeparator;
     this.filterProperties = filterProperties;
 
@@ -74,8 +72,6 @@ public class PipelineOptionsFormComponent {
 
     formToolkit = new FormToolkit(parent.getDisplay());
     formToolkit.setBackground(parent.getBackground());
-
-    optionsComponents = new LinkedHashMap<>();
   }
 
   public void updateForm(

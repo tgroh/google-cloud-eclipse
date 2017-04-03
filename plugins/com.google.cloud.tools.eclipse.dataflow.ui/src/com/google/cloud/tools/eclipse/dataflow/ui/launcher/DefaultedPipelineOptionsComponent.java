@@ -19,6 +19,7 @@ package com.google.cloud.tools.eclipse.dataflow.ui.launcher;
 import com.google.cloud.tools.eclipse.dataflow.core.preferences.DataflowPreferences;
 import com.google.cloud.tools.eclipse.dataflow.ui.page.MessageTarget;
 import com.google.cloud.tools.eclipse.dataflow.ui.preferences.RunOptionsDefaultsComponent;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyListener;
@@ -34,19 +35,21 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * A Group that contains pipeline options that are can be defaulted with {@link
+ * A Component that contains a group of pipeline options that can be defaulted with {@link
  * DataflowPreferences}. Contains a Button (with Checkbox style) to enable and disable use of
  * defaults and a {@link RunOptionsDefaultsComponent} to input said defaults.
  */
 public class DefaultedPipelineOptionsComponent {
   private Group defaultsGroup;
 
-  private Button useDefaultsButton;
+  @VisibleForTesting
+  Button useDefaultsButton;
 
   private DataflowPreferences preferences;
   private Map<String, String> customValues;
 
-  private RunOptionsDefaultsComponent defaultOptions;
+  @VisibleForTesting
+  RunOptionsDefaultsComponent defaultOptions;
 
   public DefaultedPipelineOptionsComponent(Composite parent, Object layoutData,
       MessageTarget messageTarget, DataflowPreferences preferences) {
@@ -54,7 +57,7 @@ public class DefaultedPipelineOptionsComponent {
     customValues = new HashMap<>();
 
     defaultsGroup = new Group(parent, SWT.NULL);
-    final int numColumns = 3;
+    int numColumns = 3;
     defaultsGroup.setLayout(new GridLayout(numColumns, false));
     defaultsGroup.setLayoutData(layoutData);
 
@@ -121,8 +124,7 @@ public class DefaultedPipelineOptionsComponent {
    * values of the input components must be updated to the values that will be used.
    */
   private void updateDefaultableInputValues() {
-    boolean useDefaults = useDefaultsButton.getSelection();
-    if (useDefaults) {
+    if (isUseDefaultOptions()) {
       customValues.put(DataflowPreferences.PROJECT_PROPERTY, defaultOptions.getProject());
       customValues.put(
           DataflowPreferences.STAGING_LOCATION_PROPERTY, defaultOptions.getStagingLocation());
